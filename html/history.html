@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>History</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <nav class="topnav">
+    <div class="nav-brand">Academic Performance Estimator</div>
+    <div class="nav-links">
+      <a href="index.html#hero">Home</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="index.html#assessment">Assessment</a>
+      <a href="history.html" class="active">History</a>
+    </div>
+  </nav>
+
+  <div class="page">
+    <header class="header">
+      <div class="eyebrow">Your Records</div>
+      <h1>History</h1>
+      <p class="subtitle">All results saved on this browser.</p>
+    </header>
+
+    <div id="history-empty" class="hidden">
+      <p>No results yet. <a href="index.html#assessment">Take the assessment</a> to get started.</p>
+    </div>
+
+    <div id="history-content" class="hidden">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Year</th><th>Program</th>
+            <th>Screen Time</th><th>Academic Phone Use</th><th>Social Phone Use</th>
+            <th>Study Hrs/Day</th><th>Study Days/Wk</th>
+            <th>GWA</th><th>Category</th>
+          </tr>
+        </thead>
+        <tbody id="history-table-body"></tbody>
+      </table>
+      <button type="button" id="clear-btn" class="btn-secondary">Clear History</button>
+    </div>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="history.js"></script>
+  <script src="../js/chatbot-widget.js"></script>
+</body>
+</html>

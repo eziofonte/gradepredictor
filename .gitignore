@@ -1,0 +1,17 @@
+# Byte-compiled / cache
+__pycache__/
+*.pyc
+
+# Editor/OS junk
+.DS_Store
+
+# Local config with real DB credentials
+config.py
+
+# Backup/scratch files from iteration — not part of the real project
+*.bak
+*.backup
+*.backup2
+*.phase3-backup
+academic-performance-webapp-BACKUP-*/
+academic-performance-webapp-BACKUP-*.tar.gz

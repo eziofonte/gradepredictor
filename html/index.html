@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Academic Performance Estimator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <nav class="topnav">
+    <div class="nav-brand">Academic Performance Estimator</div>
+    <div class="nav-links">
+      <a href="#hero" class="active">Home</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#assessment">Assessment</a>
+      <a href="history.html">History</a>
+    </div>
+  </nav>
+
+  <div class="page">
+    <!-- Hero Section -->
+    <section id="hero">
+    <!-- Two-column hero: content + GWA scale visual -->
+      <div class="hero-two-column">
+        <div class="hero-content">
+          <div class="eyebrow">Pamantasan ng Lungsod ng Maynila — Group 7</div>
+          <h1>Predicting Academic Performance from Digital Habits</h1>
+          <p class="subtitle">
+            A thesis tool that estimates how cellphone usage and study habits relate
+            to academic performance among PLM students.
+          </p>
+          <div class="button-row" style="margin-top: 20px;">
+            <a href="#assessment" class="btn-primary">Take the Assessment</a>
+            <a href="#how-it-works" class="btn-secondary">How It Works</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Compact horizontal strip for Cellphone Usage and Study Habits -->
+      <div class="compact-strip">
+        <div class="strip-section">
+          <h3>Cellphone Usage</h3>
+          <p>Measures daily screen time and phone use during study sessions, split between academic and social/entertainment use.</p>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-section">
+          <h3>Study Habits</h3>
+          <p>Measures average study hours per day and study frequency per week.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works">
+      <header class="header">
+        <div class="eyebrow">Reference</div>
+        <h1>How It Works</h1>
+        <p class="subtitle">A quick breakdown of what this tool measures and how it produces a result.</p>
+      </header>
+
+      <div class="field-group">
+        <h2>1. Input Factors</h2>
+        <div class="rule"></div>
+        <p>The estimator collects two categories of behavior:</p>
+        <ul>
+          <li><strong>Cellphone usage</strong> — average daily screen time, and cellphone use during study time.</li>
+          <li><strong>Study habits</strong> — average study hours per day, and study frequency per week.</li>
+        </ul>
+      </div>
+
+      <div class="field-group">
+        <h2>2. Prediction</h2>
+        <div class="rule"></div>
+        <p>
+          These inputs are used to estimate a General Weighted Average (GWA) on
+          the 1.00–5.00 scale (lower is better), matching the Philippine
+          university grading convention.
+        </p>
+      </div>
+
+      <div class="field-group">
+        <h2>3. Performance Bands</h2>
+        <div class="rule"></div>
+        <table class="data-table">
+          <thead><tr><th>Band</th><th>GWA Range</th></tr></thead>
+          <tbody>
+            <tr><td>Excellent</td><td>1.00 – 1.75</td></tr>
+            <tr><td>Good</td><td>1.76 – 2.50</td></tr>
+            <tr><td>Satisfactory</td><td>2.51 – 3.00</td></tr>
+            <tr><td>Failing</td><td>3.01 – 5.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="field-group">
+        <h2>4. Development Stage</h2>
+        <div class="rule"></div>
+        <p>
+          This web prototype currently uses trained Linear Regression and Decision Tree models on synthetic data while we
+          finalize real survey data collection. Once real data is gathered, the system
+          will be retrained on the real data — maintaining the same model architecture.
+        </p>
+      </div>
+    </section>
+
+    <!-- Assessment Section -->
+    <section id="assessment">
+      <header class="header">
+        <div class="eyebrow">Try It Now</div>
+        <h1>Get Your Prediction</h1>
+        <p class="subtitle">
+          Enter your cellphone usage and study habits below to estimate your GWA
+          and performance category.
+        </p>
+      </header>
+
+      <div class="panel">
+        <form id="estimator-form" class="form-panel">
+          <section class="field-group step-1">
+            <h2>Student</h2>
+            <div class="rule"></div>
+            <label class="field">
+              <span class="field-label">Year level</span>
+              <select id="yearLevel">
+                <option value="">Select year level</option>
+                <option>1st Year</option><option>2nd Year</option>
+                <option>3rd Year</option><option>4th Year</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Program / Course</span>
+              <span class="field-hint">Optional for this prototype</span>
+              <input type="text" id="program" placeholder="e.g. BSIT" />
+            </label>
+          </section>
+
+          <section class="field-group step-2">
+            <h2>Cellphone Usage</h2>
+            <div class="rule"></div>
+            <label class="field">
+              <span class="field-label">Average daily screen time (hours)</span>
+              <input type="number" id="screenTime" min="0" max="24" step="0.5" required />
+            </label>
+            <label class="field">
+              <span class="field-label">Academic phone use during study time (hours)</span>
+              <span class="field-hint">e.g. looking up school materials, checking the LMS</span>
+              <input type="number" id="academicPhoneUse" min="0" max="24" step="0.5" required />
+            </label>
+            <label class="field">
+              <span class="field-label">Social media / entertainment phone use during study time (hours)</span>
+              <span class="field-hint">e.g. social media, games, videos while supposed to be studying</span>
+              <input type="number" id="socialPhoneUse" min="0" max="24" step="0.5" required />
+            </label>
+          </section>
+
+          <section class="field-group step-3">
+            <h2>Study Habits</h2>
+            <div class="rule"></div>
+            <label class="field">
+              <span class="field-label">Average study hours per day</span>
+              <input type="number" id="studyHours" min="0" max="24" step="0.5" required />
+            </label>
+            <label class="field">
+              <span class="field-label">Study frequency per week (days)</span>
+              <input type="number" id="studyDays" min="0" max="7" step="1" required />
+            </label>
+          </section>
+
+          <div class="button-row">
+            <button type="submit" id="submit-btn">Estimate performance</button>
+            <button type="button" id="reset-btn">Reset</button>
+          </div>
+        </form>
+
+        <div class="result-panel" id="result-panel">
+          <div id="result-empty">
+            <h2>Result</h2>
+            <p class="empty-invite">Fill in the form to see your estimate</p>
+            <div class="gwa-scale-visual result-scale-preview">
+              <div class="gwa-scale-label">GWA Scale</div>
+              <div class="gwa-scale-bar">
+                <div class="gwa-band excellent" title="Excellent: 1.00–1.75"></div>
+                <div class="gwa-band good" title="Good: 1.76–2.50"></div>
+                <div class="gwa-band satisfactory" title="Satisfactory: 2.51–3.00"></div>
+                <div class="gwa-band failing" title="Failing: 3.01–5.00"></div>
+              </div>
+              <div class="gwa-scale-labels">
+                <span class="label">1.00</span>
+                <span class="label">1.75</span>
+                <span class="label">2.50</span>
+                <span class="label">3.00</span>
+                <span class="label">5.00</span>
+              </div>
+            </div>
+          </div>
+          <div id="result-filled" class="hidden">
+            <div class="result-label">Estimated GWA</div>
+            <div id="result-gwa" class="result-gwa"></div>
+            <div id="result-band" class="result-band"></div>
+            <div class="rule"></div>
+            <p class="result-note">Based on Linear Regression + Decision Tree models trained on synthetic data (real survey data not yet collected).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/assessment.js"></script>
+  <script src="../js/number-steppers.js"></script>
+  <script src="../js/custom-select.js"></script>
+  <script src="../js/chatbot-widget.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sections = document.querySelectorAll('section[id]');
+      const navLinks = document.querySelectorAll('.nav-links a');
+
+      const observerOptions = {
+        root: null,
+        threshold: 0.5,
+        rootMargin: '0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            navLinks.forEach(link => {
+              link.classList.remove('active');
+              if (link.getAttribute('href') === `#${id}`) {
+                link.classList.add('active');
+              }
+            });
+          }
+        });
+      }, observerOptions);
+
+      sections.forEach(section => {
+        observer.observe(section);
+      });
+    });
+  </script>
+</body>
+</html>
