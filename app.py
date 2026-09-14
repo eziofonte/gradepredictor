@@ -18,6 +18,20 @@ from academic_performance_predictor import (
 )
 import config
 
+def ensure_database_exists():
+    """Create the configured database if it doesn't exist yet.
+    Connects without specifying a database, then creates it."""
+    config_without_db = {k: v for k, v in config.MYSQL_CONFIG.items() if k != 'database'}
+    try:
+        conn = mysql.connector.connect(**config_without_db)
+        cursor = conn.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {config.MYSQL_CONFIG['database']}")
+        cursor.close()
+        conn.close()
+        print(f"✓ Database '{config.MYSQL_CONFIG['database']}' ready")
+    except Error as e:
+        print(f"Warning: Could not create database: {e}")
+
 def create_app():
     """Application factory pattern for Flask app."""
     app = Flask(__name__, static_folder=None)
@@ -372,6 +386,8 @@ if __name__ == '__main__':
     print("  GET  /results             - Get assessment results (with filtering)")
     print("  GET  /results/summary     - Get summary statistics")
     print("=" * 60)
+
+    ensure_database_exists()
 
     # Test database connection on startup
     print("Testing MySQL connection...")
