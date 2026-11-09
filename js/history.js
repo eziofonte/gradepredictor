@@ -1,6 +1,18 @@
 const emptyEl = document.getElementById('history-empty');
 const contentEl = document.getElementById('history-content');
 const tbody = document.getElementById('history-table-body');
+const yearLevelFilter = document.getElementById('year-level-filter');
+const academicTermFilter = document.getElementById('academic-term-filter');
+
+function filterHistory() {
+  Array.from(tbody.rows).forEach(row => {
+    row.hidden = (yearLevelFilter.value !== '' && row.dataset.yearLevel !== yearLevelFilter.value)
+      || (academicTermFilter.value !== '' && row.dataset.academicTerm !== academicTermFilter.value);
+  });
+}
+
+yearLevelFilter.addEventListener('change', filterHistory);
+academicTermFilter.addEventListener('change', filterHistory);
 
 async function loadHistory() {
   try {
@@ -27,6 +39,8 @@ async function loadHistory() {
 
     results.forEach(entry => {
       const row = document.createElement('tr');
+      row.dataset.yearLevel = entry.year_level || '';
+      row.dataset.academicTerm = entry.academic_term || '';
 
       // Format date: created_at is like "2026-09-05 14:32:00"
       const dateString = entry.created_at.replace(' ', 'T');
@@ -35,7 +49,8 @@ async function loadHistory() {
 
       row.innerHTML = `
         <td>${formattedDate}</td>
-        <td>${entry.yearLevel || '—'}</td>
+        <td>${entry.year_level || '—'}</td>
+        <td>${entry.academic_term || '—'}</td>
         <td>${entry.program || '—'}</td>
         <td>${entry.daily_screen_time_hrs}h</td>
         <td>${entry.academic_app_usage_hrs}h</td>
@@ -48,6 +63,7 @@ async function loadHistory() {
 
       tbody.appendChild(row);
     });
+    filterHistory();
   } catch (err) {
     // Show error in the empty state area
     emptyEl.textContent = `Error loading history: ${err.message}`;
