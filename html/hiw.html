@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How It Works - Academic Performance Estimator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: {
+        preflight: false
+      },
+      theme: {
+        extend: {
+          colors: { cream: '#FAF6EF', maroon: '#7A1E2B', gold: '#B08D3D' }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../js/theme-toggle.js"></script>
+  <style>
+    .timeline {
+      position: relative;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--rule);
+      transform: translateX(-50%);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 40px;
+      width: calc(50% - 40px);
+      float: right;
+      clear: both;
+    }
+    .timeline-item:nth-child(even) {
+      float: left;
+    }
+    .timeline-badge {
+      position: absolute;
+      top: 0;
+      right: -30px;
+      width: 40px;
+      height: 40px;
+      background: var(--sage);
+      color: var(--dark-ink);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+    .timeline-item:nth-child(even) .timeline-badge {
+      right: auto;
+      left: -30px;
+    }
+    .timeline-content {
+      background: var(--navy-panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 12px;
+    }
+    .timeline-content h3 {
+      margin: 0 0 12px 0;
+      font-size: 20px;
+      color: var(--ink-light);
+    }
+    .timeline-content p {
+      margin: 0 0 16px 0;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .timeline-content ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .timeline-content li {
+      margin-bottom: 8px;
+    }
+    @media (max-width: 768px) {
+      .timeline {
+        margin: 20px 16px;
+      }
+      .timeline::before {
+        left: 20px;
+      }
+      .timeline-item {
+        width: calc(100% - 40px);
+        float: none;
+        margin-left: 40px;
+      }
+      .timeline-badge {
+        left: -20px;
+        top: 10px;
+      }
+      .timeline-item:nth-child(even) .timeline-badge {
+        left: -20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="nav-brand">Academic Performance Estimator</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="hiw.html" class="active">How It Works</a>
+      <a href="assessment.html">Assessment</a>
+      <a href="history.html">History</a>
+      <a href="chatbot.html">Chatbot</a>
+    </div>
+    <div class="nav-actions">
+      <label class="switch theme-toggle">
+        <input id="checkbox" type="checkbox" />
+        <span class="slider">
+          <div class="star star_1"></div>
+          <div class="star star_2"></div>
+          <div class="star star_3"></div>
+          <svg viewBox="0 0 16 16" class="cloud_1 cloud">
+            <path transform="matrix(.77976 0 0 .78395-299.99-418.63)" fill="#fff"
+              d="m391.84 540.91c-.421-.329-.949-.524-1.523-.524-1.351 0-2.451 1.084-2.485 2.435-1.395.526-2.388 1.88-2.388 3.466 0 1.874 1.385 3.423 3.182 3.667v.034h12.73v-.006c1.775-.104 3.182-1.584 3.182-3.395 0-1.747-1.309-3.186-2.994-3.379.007-.106.011-.214.011-.322 0-2.707-2.271-4.901-5.072-4.901-2.073 0-3.856 1.202-4.643 2.925">
+            </path>
+          </svg>
+        </span>
+      </label>
+    </div>
+  </nav>
+
+  <div class="page">
+    <header class="header">
+      <div class="eyebrow">Reference</div>
+      <h1>How It Works</h1>
+      <p class="subtitle">A step-by-step breakdown of how this tool estimates academic performance.</p>
+    </header>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-badge">1</div>
+        <div class="timeline-content">
+          <h3>Input Factors</h3>
+          <p>The estimator collects two categories of behavior:</p>
+          <ul>
+            <li><strong>Cellphone Usage</strong>
+              <ul>
+                <li>Average daily screen time</li>
+                <li>Academic app usage during study time</li>
+                <li>Social media usage during study time</li>
+              </ul>
+            </li>
+            <li><strong>Study Habits</strong>
+              <ul>
+                <li>Average study hours per day</li>
+                <li>Study frequency per week</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-badge">2</div>
+        <div class="timeline-content">
+          <h3>Prediction</h3>
+          <p>
+            These inputs are used to estimate a General Weighted Average (GWA) on the 1.00–5.00 scale (lower is better), matching the Philippine university grading convention.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-badge">3</div>
+        <div class="timeline-content">
+          <h3>Performance Bands</h3>
+          <p>
+            The predicted GWA is mapped to a performance category based on the following ranges:
+          </p>
+          <ul>
+            <li><strong>Excellent</strong>: 1.00 – 1.75</li>
+            <li><strong>Good</strong>: 1.76 – 2.50</li>
+            <li><strong>Satisfactory</strong>: 2.51 – 3.00</li>
+            <li><strong>Failing</strong>: 3.01 – 5.00</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-badge">4</div>
+        <div class="timeline-content">
+          <h3>Model Used</h3>
+          <p>
+            This web prototype uses a <strong>Linear Regression</strong> model trained on synthetic data to make predictions. The Decision Tree model has been removed as per the latest update.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/assessment.js"></script>
+</body>
+</html>
