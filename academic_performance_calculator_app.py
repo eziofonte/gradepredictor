@@ -4,7 +4,6 @@ from tkinter import ttk, messagebox
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeClassifier
 
 from academic_performance_predictor import (
     generate_synthetic_data,
@@ -32,19 +31,29 @@ CATEGORY_COLORS = {
 
 
 def train_models():
-    """Train the regression + decision tree models once on synthetic
-    data when the app starts. Quiet (no console prints) by design."""
+    """Train the regression model once on synthetic
+    data when the app starts (matches the web app's behavior:
+    no saved model files, fresh training each run)."""
     df = generate_synthetic_data(n=400)
-
     X = df[FEATURE_COLUMNS]
 
-    reg = LinearRegression()
-    reg.fit(X, df[TARGET_SCORE])
+    reg_model = LinearRegression()
+    reg_model.fit(X, df[TARGET_SCORE])
 
-    clf = DecisionTreeClassifier(max_depth=4, min_samples_leaf=8, random_state=RANDOM_SEED)
-    clf.fit(X, df[TARGET_CLASS])
+    return reg_model
 
-    return reg, clf
+
+def predict_new_student(reg_model, student_dict):
+    """Given a dict of feature values for one student, return the GWA,
+    the GWA-derived category (source of truth). Matches
+    app.py's predict_new_student() logic exactly."""
+    X_new = pd.DataFrame([student_dict])[FEATURE_COLUMNS]
+    gwa = float(np.clip(reg_model.predict(X_new)[0], 1.00, 5.00))
+    gwa = round(gwa, 2)
+
+    category = gwa_to_category(gwa)  # source of truth, always derived from GWA
+
+    return gwa, category
 
 
 class PredictorApp(tk.Tk):
@@ -55,7 +64,7 @@ class PredictorApp(tk.Tk):
         self.configure(padx=16, pady=16)
         self.minsize(520, 0)
 
-        self.reg_model, self.clf_model = train_models()
+        self.reg_model = train_models()
         self.entries = {}
 
         self._build_header()
@@ -148,11 +157,6 @@ class PredictorApp(tk.Tk):
         )
         self.category_label.pack(anchor="w", pady=(2, 0))
 
-        self.tree_label = ttk.Label(
-            self.result_frame, text="", font=("Segoe UI", 9), foreground="#444444",
-        )
-        self.tree_label.pack(anchor="w", pady=(4, 0))
-
         self.pseudo_note = ttk.Label(
             self.result_frame,
             text="(PSEUDO-OUTPUT - synthetic data, for demo only)",
@@ -189,22 +193,12 @@ class PredictorApp(tk.Tk):
         else:
             self.warning_label.config(text="")
 
-        X_new = pd.DataFrame([values])[FEATURE_COLUMNS]
-        gwa = float(np.clip(self.reg_model.predict(X_new)[0], 1.00, 5.00))
-        gwa = round(gwa, 2)
-
-        category = gwa_to_category(gwa)
-
-        tree_category = self.clf_model.predict(X_new)[0]
+        gwa, category = predict_new_student(self.reg_model, values)
 
         self.gwa_label.config(text=f"Predicted GWA: {gwa:.2f}  (1.00-5.00, lower = better)")
         self.category_label.config(
             text=f"Predicted category: {category}",
             foreground=CATEGORY_COLORS.get(category, "black"),
-        )
-        agree = " (agrees)" if tree_category == category else " (disagrees - see note below)"
-        self.tree_label.config(
-            text=f"Decision tree model separately predicts: {tree_category}{agree}"
         )
 
     def on_reset(self):
@@ -213,7 +207,6 @@ class PredictorApp(tk.Tk):
         self.warning_label.config(text="")
         self.gwa_label.config(text="Predicted GWA: -")
         self.category_label.config(text="Predicted category: -", foreground="black")
-        self.tree_label.config(text="")
 
     def load_preset(self, name):
         presets = {

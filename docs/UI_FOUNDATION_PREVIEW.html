@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI foundation preview — fictitious examples</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <script src="../js/theme-toggle.js"></script>
+  <style>
+    /* Review-only layouts; live history implementation belongs to step three. */
+    .preview-stack { display: grid; gap: var(--sp-3); }
+    .preview-stack h2 { font-size: 20px; margin: 0 0 16px; }
+    .preview-stack h3 { font-size: 16px; margin: 0; }
+    .preview-stack p { line-height: 1.6; }
+    .preview-heading { display: flex; align-items: start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+    .preview-count { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .preview-table { overflow-x: auto; }
+    .preview-table td { padding-block: 24px; }
+    .preview-table caption { text-align: left; margin-bottom: 16px; color: var(--muted); }
+    .preview-gwa { font-size: 28px; color: var(--gold); font-weight: 700; font-variant-numeric: tabular-nums; }
+    html[data-theme="light"] .preview-gwa { color: #80601D; }
+    .preview-category { display: inline-block; padding: 8px 12px; background: var(--success-bg); color: var(--success); border-radius: 12px; font-size: 14px; }
+    .preview-phone { max-width: 390px; padding: 16px; background: var(--navy); border: 1px solid var(--rule); border-radius: 16px; }
+    .preview-phone .button-row { margin-top: 24px; }
+    .preview-phone .btn-secondary { width: 100%; }
+    .preview-result { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-block: 24px; }
+    .preview-note { margin-top: 0; }
+    @media (max-width: 599px) { .surface { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <nav class="topnav" aria-label="Main navigation">
+    <div class="nav-brand">Academic Performance Predictor</div>
+    <div class="nav-links">
+      <a href="../html/index.html#hero">Home</a>
+      <a href="../html/index.html#how-it-works">How It Works</a>
+      <a href="../html/index.html#assessment">Assessment</a>
+      <a href="../html/history.html" class="active">History</a>
+    </div>
+    <div class="nav-actions">
+      <div class="account-controls"><span class="account-name" title="Example Student With A Long Display Name">Example Student With A Long Display Name</span><button class="btn-secondary account-button" disabled>Sign out</button></div>
+      <label class="switch theme-toggle">
+        <input type="checkbox" aria-label="Switch theme">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </nav>
+  <main class="page page--history preview-stack">
+    <div class="status"><strong>Static design preview — all records and names are fictitious.</strong> Only the theme switch and navigation links work. Account, filter, and record actions will be implemented in later steps.</div>
+    <header class="header preview-heading">
+      <div><h1>Your assessment history</h1><p class="subtitle">Review the estimates saved to your PLM account.</p></div>
+      <button class="btn-primary" disabled>New assessment</button>
+    </header>
+    <p class="text-secondary preview-note">Only you can access your saved assessments.</p>
+    <section class="surface" aria-labelledby="desktop-heading">
+      <h2 id="desktop-heading">Desktop record example</h2>
+      <div class="preview-count"><strong>1 saved assessment · example</strong><span class="text-secondary">Newest first · Philippine time</span></div>
+      <div class="preview-table">
+        <table class="data-table">
+          <caption>Fictitious record for layout review</caption>
+          <thead><tr><th scope="col">Date</th><th scope="col">Academic details</th><th scope="col">Predicted GWA</th><th scope="col">Category</th><th scope="col">Action</th></tr></thead>
+          <tbody><tr><td>Nov 11, 2026<br><span class="text-secondary">3:45 AM</span></td><td>2nd Year · 1st Semester<br><span class="text-secondary">BSIT</span></td><td><span class="preview-gwa">2.15</span></td><td><span class="preview-category">Good</span></td><td><button class="btn-secondary" disabled>View details</button></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <section aria-labelledby="phone-heading">
+      <h2 id="phone-heading">Phone record example</h2>
+      <p class="text-secondary">390px maximum width; adapts to smaller windows. Fictitious record.</p>
+      <div class="preview-phone">
+        <article class="surface">
+          <h3>Nov 11, 2026</h3><span class="text-secondary">3:45 AM · Philippine time</span>
+          <div class="preview-result"><div><div class="text-secondary">Predicted GWA</div><span class="preview-gwa">2.15</span></div><span class="preview-category">Good</span></div>
+          <p>2nd Year · 1st Semester<br><span class="text-secondary">BSIT</span></p>
+          <div class="button-row"><button class="btn-secondary" disabled>View details</button></div>
+        </article>
+      </div>
+    </section>
+    <section class="surface preview-stack" aria-labelledby="states-heading">
+      <h2 id="states-heading">Shared controls and feedback</h2>
+      <p class="text-secondary preview-note">Visual samples only. Keyboard-focus the active sample buttons to inspect the focus ring.</p>
+      <div class="button-row"><button class="btn-primary" type="button">Primary sample</button><button class="btn-secondary" type="button">Secondary sample</button><button class="btn-secondary btn-danger" type="button">Destructive sample</button><button class="btn-secondary" disabled>Disabled sample</button><button class="btn-secondary" aria-busy="true" disabled>Saving…</button></div>
+      <div class="status status--pending">Loading your history…<span class="skeleton" style="margin-top: 16px; width: 65%;" aria-hidden="true"></span></div>
+      <div class="status status--success"><strong>Success example:</strong> Assessment deleted.</div>
+      <div class="status status--error"><strong>Error example:</strong> We couldn't load your history. Please try again.</div>
+      <div class="status"><strong>No assessments yet</strong><br>Your future signed-in assessments will appear here.</div>
+    </section>
+  </main>
+</body>
+</html>

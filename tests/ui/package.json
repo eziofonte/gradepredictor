@@ -1,0 +1,6 @@
+{
+  "name": "acad-perf-ui-checks",
+  "private": true,
+  "scripts": { "test": "node --test *.test.cjs" },
+  "devDependencies": { "jsdom": "^27.0.0" }
+}

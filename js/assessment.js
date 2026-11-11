@@ -5,13 +5,34 @@ const resultPanel = document.getElementById('result-panel');
 const submitBtn = document.getElementById('submit-btn');
 const resetBtn = document.getElementById('reset-btn');
 const resultGwa = document.getElementById('result-gwa');
+const resultSuggestions = document.getElementById('result-suggestions');
+const assessmentMessage = document.getElementById('assessment-message');
+let submitting = false;
+let resultTimers = [];
+let markerPosition = null;
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const later = (action, delay) => resultTimers.push(setTimeout(action, delay));
+function clearResultTimers() { resultTimers.forEach(clearTimeout); resultTimers = []; }
 
 const requiredIds = ['academicTerm', 'screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays'];
+
+requiredIds.forEach(id => {
+  const input = document.getElementById(id);
+  const descriptions = new Set((input.getAttribute('aria-describedby') || '').split(' ').filter(Boolean));
+  const hint = input.closest('.field')?.querySelector('.field-hint');
+  const unit = input.closest('.input-shell')?.querySelector('.unit-tag');
+  if (hint?.textContent.trim()) { hint.id ||= id + '-hint'; descriptions.add(hint.id); }
+  if (unit) { unit.id ||= id + '-units'; descriptions.add(unit.id); }
+  if (document.getElementById(id + '-error')) descriptions.add(id + '-error');
+  input.setAttribute('aria-describedby', [...descriptions].join(' '));
+});
 
 function updateFieldError(id) {
   const input = document.getElementById(id);
   const shell = input.closest('.input-shell');
   const error = document.getElementById(`${id}-error`);
+  input.setAttribute('aria-invalid', String(!input.validity.valid));
+  shell?.querySelector('.custom-select-trigger')?.setAttribute('aria-invalid', String(!input.validity.valid));
 
   if (input.validity.valid) {
     if (shell) shell.classList.remove('has-error');
@@ -29,7 +50,7 @@ function updateFieldError(id) {
 }
 
 function checkFormValid() {
-  submitBtn.disabled = !requiredIds.every(id => document.getElementById(id).value !== '');
+  submitBtn.disabled = submitting || !requiredIds.every(id => document.getElementById(id).value !== '');
 }
 
 function gwaToPosition(gwa) {
@@ -47,16 +68,20 @@ function gwaToPosition(gwa) {
 function renderSlidingNumber(el, value) {
   const str = value.toFixed(2);
   el.innerHTML = '';
+  el.setAttribute('aria-label', 'Predicted GWA ' + str);
+  if (reducedMotion()) { el.classList.remove('gwa-sliding'); el.textContent = str; return; }
   el.classList.add('gwa-sliding');
   [...str].forEach((ch, i) => {
     if (ch === '.') {
       const dot = document.createElement('span');
       dot.className = 'gwa-digit-dot';
       dot.textContent = '.';
+      dot.setAttribute('aria-hidden', 'true');
       el.appendChild(dot);
       return;
     }
     const frame = document.createElement('span');
+    frame.setAttribute('aria-hidden', 'true');
     frame.className = 'gwa-digit-frame';
     const col = document.createElement('span');
     col.className = 'gwa-digit-col';
@@ -68,7 +93,7 @@ function renderSlidingNumber(el, value) {
     }
     frame.appendChild(col);
     el.appendChild(frame);
-    setTimeout(() => {
+    later(() => {
       col.style.transform = `translateY(-${parseInt(ch, 10)}em)`;
     }, 150 + i * 90);
   });
@@ -86,10 +111,19 @@ function positionMarkerTag(markerTag, scaleBarWrap, position) {
 }
 
 function showResult(result) {
+  clearResultTimers();
   resultEmpty.classList.add('hidden');
   resultFilled.classList.remove('hidden');
   document.getElementById('result-note-wrap').classList.remove('hidden');
   resultPanel.classList.add('filled');
+
+  resultSuggestions.replaceChildren();
+  (result.suggestions || []).forEach(suggestion => {
+    const item = document.createElement('li');
+    item.textContent = suggestion;
+    resultSuggestions.appendChild(item);
+  });
+  resultSuggestions.classList.toggle('hidden', resultSuggestions.children.length === 0);
 
   renderSlidingNumber(resultGwa, result.predicted_gwa);
 
@@ -103,10 +137,14 @@ function showResult(result) {
   resultGwa.classList.remove('gwa-text-excellent', 'gwa-text-good', 'gwa-text-satisfactory', 'gwa-text-failing');
   const categorySlug = result.performance_category.trim().toLowerCase();
   resultGwa.classList.add('gwa-text-' + categorySlug);
-  const markerPosition = gwaToPosition(result.predicted_gwa);
+  markerPosition = gwaToPosition(result.predicted_gwa);
   marker.style.left = markerPosition + '%';
   markerTag.style.transform = '';
   positionMarkerTag(markerTag, scaleBarWrap, markerPosition);
+  if (reducedMotion()) {
+    scaleVisual.classList.add('revealed'); bar.classList.add('revealed'); marker.classList.add('visible');
+    return;
+  }
 
   marker.classList.remove('visible');
   bar.classList.remove('revealed');
@@ -115,17 +153,15 @@ function showResult(result) {
   const alreadyExpanded = scaleVisual.classList.contains('revealed');
 
   function fillBarThenShowMarker() {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => bar.classList.add('revealed'));
-    });
-    setTimeout(() => marker.classList.add('visible'), 1150); // matches 1.1s clip-path + buffer
+    later(() => bar.classList.add('revealed'), 16);
+    later(() => marker.classList.add('visible'), 1150);
   }
 
   if (alreadyExpanded) {
     fillBarThenShowMarker();
   } else {
     scaleVisual.classList.add('revealed');
-    setTimeout(fillBarThenShowMarker, 550); // matches 0.5s max-height + buffer
+    later(fillBarThenShowMarker, 550);
   }
 }
 
@@ -134,10 +170,12 @@ requiredIds.forEach(id => document.getElementById(id).addEventListener('input', 
   checkFormValid();
 }));
 
+let pendingSubmission = null;
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (submitting || window.authInvalidated) return;
 
-  if (!requiredIds.every(updateFieldError)) {
+  if (!requiredIds.map(updateFieldError).every(Boolean)) {
     checkFormValid();
     return;
   }
@@ -154,16 +192,31 @@ form.addEventListener('submit', async (e) => {
   };
 
   // Disable button and show loading state
+  submitting = true;
   submitBtn.disabled = true;
+  resetBtn.disabled = true;
+  form.setAttribute('aria-busy', 'true');
+  submitBtn.setAttribute('aria-busy', 'true');
+  assessmentMessage.hidden = true;
   const originalBtnText = submitBtn.textContent;
-  submitBtn.textContent = 'Estimating...';
+  submitBtn.textContent = 'Predicting...';
 
   try {
+    const auth = await window.authReady;
+    if (window.authInvalidated) return;
+    data.save_to_history = auth.authenticated;
+    if (auth.authenticated) {
+      const signature = JSON.stringify(data);
+      if (!pendingSubmission || pendingSubmission.signature !== signature) pendingSubmission = { signature, id: crypto.randomUUID() };
+      data.submission_id = pendingSubmission.id;
+    }
     const response = await fetch('/predict', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...window.authHeaders(auth)
       },
+      signal: AbortSignal.timeout(15000),
       body: JSON.stringify(data)
     });
 
@@ -173,45 +226,57 @@ form.addEventListener('submit', async (e) => {
     }
 
     const result = await response.json();
+    if (window.authInvalidated) return;
 
     showResult(result);
 
-    // Save entry to localStorage for offline access/backup
-    const entry = {
-      yearLevel: data.yearLevel,
-      academic_term: data.academicTerm,
-      program: data.program,
-      daily_screen_time_hrs: data.screenTime,
-      academic_app_usage_hrs: data.academicPhoneUse,
-      social_media_hrs: data.socialPhoneUse,
-      study_hours_per_day: data.studyHours,
-      study_frequency_per_week: data.studyDays,
-      predicted_gwa: result.predicted_gwa,
-      performance_category: result.performance_category,
-      created_at: new Date().toISOString().replace('T', ' ').substring(0, 19) // Format: YYYY-MM-DD HH:MM:SS
-    };
-    saveEntry(entry);
+    let notice = document.getElementById('save-status');
+    if (!notice) {
+      notice = document.createElement('p');
+      notice.id = 'save-status';
+      notice.setAttribute('role', 'status');
+      resultFilled.appendChild(notice);
+    }
+    notice.replaceChildren();
+    if (result.saved) {
+      pendingSubmission = null;
+      notice.textContent = 'Saved to your history.';
+    } else if (auth.authenticated) {
+      notice.textContent = result.save_error || 'Your result could not be saved.';
+    } else {
+      notice.append('Guest result — not saved. Use your PLM school account to save future assessments. ');
+      notice.appendChild(window.createMicrosoftSignIn(location.pathname.replace(/^\/html\//, '/') === '/assessment.html' ? '/assessment.html' : '/#assessment'));
+    }
 
   } catch (err) {
-    // Show error message
-    const inviteEl = document.querySelector('#result-empty .empty-invite');
-    inviteEl.textContent = `Error: ${err.message}`;
-    inviteEl.classList.add('error-text');
-    resultEmpty.classList.remove('hidden');
-    resultFilled.classList.add('hidden');
-    resultPanel.classList.remove('filled');
+    if (!window.authInvalidated) {
+      assessmentMessage.textContent = 'We could not get a prediction. ' + err.message + ' Please try again.' + (resultFilled.classList.contains('hidden') ? '' : ' The previous prediction is still shown.');
+      assessmentMessage.hidden = false;
+    }
   } finally {
     // Re-enable button and reset text
-    submitBtn.disabled = false;
+    submitting = false;
+    resetBtn.disabled = false;
+    form.removeAttribute('aria-busy'); submitBtn.removeAttribute('aria-busy');
     submitBtn.textContent = originalBtnText;
+    checkFormValid();
   }
 });
 
 resetBtn.addEventListener('click', () => {
+  if (submitting) return;
+  clearResultTimers(); markerPosition = null;
   form.reset();
+  assessmentMessage.hidden = true;
+  pendingSubmission = null;
+  form.querySelectorAll('.has-error').forEach(shell => shell.classList.remove('has-error'));
+  form.querySelectorAll('.field-error').forEach(error => { error.textContent = ''; });
+  form.querySelectorAll('[aria-invalid]').forEach(field => field.removeAttribute('aria-invalid'));
 
   resultEmpty.classList.remove('hidden');
   resultFilled.classList.add('hidden');
+  resultSuggestions.classList.add('hidden');
+  resultSuggestions.replaceChildren();
   document.getElementById('result-note-wrap').classList.add('hidden');
   resultPanel.classList.remove('filled');
 
@@ -227,6 +292,13 @@ resetBtn.addEventListener('click', () => {
 });
 
 checkFormValid();
+
+function alignResultMarker() {
+  if (markerPosition !== null) positionMarkerTag(document.getElementById('gwa-marker-tag'), document.querySelector('.gwa-scale-bar-wrap'), markerPosition);
+}
+if ('ResizeObserver' in window) new ResizeObserver(alignResultMarker).observe(resultPanel);
+else window.addEventListener('resize', alignResultMarker);
+window.addEventListener('auth:cleared', () => { clearResultTimers(); markerPosition = null; });
 
 document.querySelectorAll('.input-shell').forEach(shell => {
   const input = shell.querySelector('input[type="number"]');

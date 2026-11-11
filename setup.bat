@@ -20,5 +20,7 @@ if not exist config.py (
     exit /b
 )
 
-echo Starting the app...
-python app.py
+echo Ensure the database migration has been run after making a backup.
+echo Starting the app. Your Microsoft client secret will be requested privately.
+python -m tools.run_local
+pause

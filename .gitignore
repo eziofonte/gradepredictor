@@ -1,6 +1,10 @@
 # Byte-compiled / cache
 __pycache__/
 *.pyc
+.pytest_cache/
+node_modules/
+backups/
+.env
 
 # Editor/OS junk
 .DS_Store

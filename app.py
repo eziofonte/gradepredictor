@@ -1,13 +1,12 @@
 import os
-import sys
-from flask import Flask, request, jsonify, send_from_directory
-import mysql.connector
+from flask import Flask, request, jsonify, send_from_directory, session
+from acad_history.database import connect
+from acad_history.account_history import setup as setup_accounts, save_prediction
 from mysql.connector import Error
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 
-import config
 from academic_performance_predictor import (
     generate_synthetic_data,
     FEATURE_COLUMNS,
@@ -18,33 +17,40 @@ from academic_performance_predictor import (
 )
 
 
-def ensure_database_exists():
-    """Create the configured database if it doesn't exist yet.
-    Connects without specifying a database, then creates it."""
-    config_without_db = {k: v for k, v in config.MYSQL_CONFIG.items() if k != 'database'}
-    try:
-        conn = mysql.connector.connect(**config_without_db)
-        cursor = conn.cursor()
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {config.MYSQL_CONFIG['database']}")
-        cursor.close()
-        conn.close()
-        print(f"[OK] Database '{config.MYSQL_CONFIG['database']}' ready")
-    except Error as e:
-        print(f"Warning: Could not create database: {e}")
+HIGH_SOCIAL_MEDIA_HOURS = 2
+HIGH_ACADEMIC_APP_HOURS = 4
+MAX_SUGGESTIONS = 4
 
 
-def create_app():
+def get_suggestions(category, inputs):
+    """Return a category message followed by tips for reported habits."""
+    category_messages = {
+        'Excellent': 'Keep up the study habits supporting your excellent result.',
+        'Good': 'Build on your good result with consistent study habits.',
+        'Satisfactory': 'Strengthen your study routine to improve your result.',
+        'Failing': 'Seek academic support and work on a manageable study plan.',
+    }
+    suggestions = [category_messages[category]]
+    if inputs['socialPhoneUse'] > HIGH_SOCIAL_MEDIA_HOURS:
+        suggestions.append('Set app limits and schedule phone-free study blocks.')
+    if inputs['academicPhoneUse'] > HIGH_ACADEMIC_APP_HOURS:
+        suggestions.append('Check whether this time is real study time or distraction.')
+    return suggestions[:MAX_SUGGESTIONS]
+
+
+def create_app(overrides=None):
     """Application factory pattern for Flask app."""
     app = Flask(__name__, static_folder=None)
+    setup_accounts(app, overrides)
 
     # MySQL connection
     def get_db_connection():
         """Create and return a MySQL database connection."""
         try:
-            connection = mysql.connector.connect(**config.MYSQL_CONFIG)
+            connection = connect()
             return connection
-        except Error as e:
-            print(f"Error connecting to MySQL: {e}")
+        except Error:
+            app.logger.warning('MySQL connection unavailable')
             return None
 
     def train_models():
@@ -95,13 +101,27 @@ def create_app():
     def serve_index():
         return send_from_directory('html', 'index.html')
 
-    @app.route('/<path:path>')
-    def serve_static(path):
-        for folder in ('html', 'js', '.'):
-            candidate = os.path.join(folder, path)
-            if os.path.isfile(candidate):
-                return send_from_directory(folder, path)
-        return jsonify({'error': 'Not found'}), 404
+    @app.get('/<page>.html')
+    def serve_page(page):
+        if page not in ('index', 'assessment', 'history', 'hiw', 'privacy', 'terms'):
+            return jsonify({'error': 'Not found'}), 404
+        return send_from_directory('html', page + '.html')
+
+    @app.get('/html/<page>.html')
+    def serve_html_page(page):
+        return serve_page(page)
+
+    @app.get('/js/<path:filename>')
+    def serve_js(filename):
+        return send_from_directory('js', filename)
+
+    @app.get('/assets/<path:filename>')
+    def serve_assets(filename):
+        return send_from_directory('assets', filename)
+
+    @app.get('/style.css')
+    def serve_css():
+        return send_from_directory('.', 'style.css')
 
     # Health check endpoint
     @app.route('/health')
@@ -120,10 +140,21 @@ def create_app():
 
     @app.route('/predict', methods=['POST'])
     def predict():
-        data = request.get_json()
+        data = request.get_json(silent=True)
 
-        if not data:
+        if not isinstance(data, dict) or not data:
             return jsonify({'error': 'No JSON data provided'}), 400
+
+        if any(key in data for key in ('user_id', 'userId', 'owner_id')):
+            return jsonify({'error': 'User ownership is determined by your session.'}), 400
+        expected = request.headers.get('X-Expected-User')
+        actual = str(session.get('user_id', 'guest'))
+        if expected is not None and expected != actual:
+            return jsonify({'error': 'The signed-in account changed. Reload this page.'}), 409
+        if data.get('save_to_history') is True and not session.get('user_id'):
+            return jsonify({'error': 'Your session expired. Please sign in again.'}), 401
+        if session.get('user_id') and data.get('save_to_history') is not True:
+            return jsonify({'error': 'Your sign-in changed. Reload the page before submitting.'}), 409
 
         # Extract and validate required fields (matching assessment form)
         required_fields = ['screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays']
@@ -173,154 +204,23 @@ def create_app():
 
         predicted_gwa, performance_category = predict_new_student(reg_model, student_data)
 
-        # Try to store result in database (optional, continue if fails)
-        assessment_id = None
-        db_connection = get_db_connection()
-        if db_connection and db_connection.is_connected():
-            try:
-                cursor = db_connection.cursor()
-                insert_query = """
-                INSERT INTO assessments 
-                (daily_screen_time_hrs, academic_app_usage_hrs, social_media_hrs,
-                 study_hours_per_day, study_frequency_per_week,
-                 predicted_gwa, performance_category, year_level, program, academic_term)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                cursor.execute(insert_query, (
-                    screenTime,
-                    academicPhoneUse,
-                    socialPhoneUse,
-                    studyHours,
-                    studyDays,
-                    predicted_gwa,
-                    performance_category,
-                    data.get('yearLevel'),
-                    data.get('program'),
-                    data['academicTerm']
-                ))
-                assessment_id = cursor.lastrowid
-                db_connection.commit()
-                cursor.close()
-            except Error as e:
-                print(f"Warning: Could not store assessment in database: {e}")
-                assessment_id = None
-            finally:
-                if db_connection.is_connected():
-                    db_connection.close()
-
-        return jsonify({
-            'assessment_id': assessment_id,
+        result = {
+            'assessment_id': None, 'saved': False, 'save_error': None,
             'predicted_gwa': predicted_gwa,
             'performance_category': performance_category,
+            'suggestions': get_suggestions(performance_category, student_data),
             'model_info': {
                 'regression_model': 'Linear Regression',
                 'note': 'performance_category is always derived from predicted_gwa via gwa_to_category()'
             }
-        })
-
-    @app.route('/results', methods=['GET'])
-    def get_results():
-        """Get all assessment results with optional filtering."""
-        try:
-            db_connection = get_db_connection()
-            if not db_connection or not db_connection.is_connected():
-                return jsonify({'error': 'Database connection failed'}), 500
-
-            cursor = db_connection.cursor(dictionary=True)
-
-            limit = request.args.get('limit', 100, type=int)
-            offset = request.args.get('offset', 0, type=int)
-
-            query = "SELECT * FROM assessments ORDER BY created_at DESC LIMIT %s OFFSET %s"
-            cursor.execute(query, [limit, offset])
-            results = cursor.fetchall()
-
-            cursor.execute("SELECT COUNT(*) as total FROM assessments")
-            total_count = cursor.fetchone()['total']
-
-            cursor.close()
-            db_connection.close()
-
-            return jsonify({
-                'results': results,
-                'pagination': {
-                    'total': total_count,
-                    'limit': limit,
-                    'offset': offset,
-                    'has_more': (offset + limit) < total_count
-                }
-            })
-
-        except Error as e:
-            print(f"Database error in get_results: {e}")
-            return jsonify({'error': 'Database error'}), 500
-        except Exception as e:
-            print(f"Error in get_results: {e}")
-            return jsonify({'error': 'Internal server error'}), 500
-
-    @app.route('/results/summary', methods=['GET'])
-    def get_results_summary():
-        """Get summary statistics of assessment results."""
-        try:
-            db_connection = get_db_connection()
-            if not db_connection or not db_connection.is_connected():
-                return jsonify({'error': 'Database connection failed'}), 500
-
-            cursor = db_connection.cursor(dictionary=True)
-
-            # Get overall statistics
-            cursor.execute("""
-                SELECT
-                    COUNT(*) as total_assessments,
-                    AVG(predicted_gwa) as avg_gwa,
-                    MIN(predicted_gwa) as min_gwa,
-                    MAX(predicted_gwa) as max_gwa,
-                    COUNT(CASE WHEN performance_category = 'Excellent' THEN 1 END) as excellent_count,
-                    COUNT(CASE WHEN performance_category = 'Good' THEN 1 END) as good_count,
-                    COUNT(CASE WHEN performance_category = 'Satisfactory' THEN 1 END) as satisfactory_count,
-                    COUNT(CASE WHEN performance_category = 'Failing' THEN 1 END) as failing_count
-                FROM assessments
-            """)
-            overall_stats = cursor.fetchone()
-
-            cursor.close()
-            db_connection.close()
-
-            # Calculate percentages
-            total = overall_stats['total_assessments'] or 1  # Avoid division by zero
-            summary = {
-                'total_assessments': overall_stats['total_assessments'],
-                'avg_gwa': round(overall_stats['avg_gwa'], 2) if overall_stats['avg_gwa'] else 0,
-                'min_gwa': round(overall_stats['min_gwa'], 2) if overall_stats['min_gwa'] else 0,
-                'max_gwa': round(overall_stats['max_gwa'], 2) if overall_stats['max_gwa'] else 0,
-                'band_distribution': {
-                    'excellent': {
-                        'count': overall_stats['excellent_count'],
-                        'percentage': round((overall_stats['excellent_count'] / total) * 100, 1)
-                    },
-                    'good': {
-                        'count': overall_stats['good_count'],
-                        'percentage': round((overall_stats['good_count'] / total) * 100, 1)
-                    },
-                    'satisfactory': {
-                        'count': overall_stats['satisfactory_count'],
-                        'percentage': round((overall_stats['satisfactory_count'] / total) * 100, 1)
-                    },
-                    'failing': {
-                        'count': overall_stats['failing_count'],
-                        'percentage': round((overall_stats['failing_count'] / total) * 100, 1)
-                    }
-                },
-            }
-
-            return jsonify(summary)
-
-        except Error as e:
-            print(f"Database error in get_results_summary: {e}")
-            return jsonify({'error': 'Database error'}), 500
-        except Exception as e:
-            print(f"Error in get_results_summary: {e}")
-            return jsonify({'error': 'Internal server error'}), 500
+        }
+        if session.get('user_id'):
+            saved, status = save_prediction(data, predicted_gwa, performance_category)
+            if status != 200:
+                return jsonify(saved), status
+            result.update(saved)
+            result['suggestions'] = get_suggestions(result['performance_category'], student_data)
+        return jsonify(result)
 
     # Error handlers
     @app.errorhandler(404)
@@ -335,90 +235,6 @@ def create_app():
 
 
 if __name__ == '__main__':
-    # Create the app
     app = create_app()
-
-    # Print startup information
-    print("=" * 60)
-    print("Academic Performance Estimator Backend")
-    print("Impact of Cellphone Usage and Study Habits in the Academic Performance of PLM Students")
-    print("=" * 60)
-    print("To run locally:")
-    print("1. pip install -r requirements.txt")
-    print("2. Edit config.py with your local MySQL credentials")
-    print("3. python app.py")
-    print()
-    print(f"Server will run on: http://{config.FLASK_CONFIG['HOST']}:{config.FLASK_CONFIG['PORT']}")
-    print("Frontend will be served at the root URL")
-    print("API Endpoints:")
-    print("  GET  /                    - Serves frontend (index.html)")
-    print("  GET  /<path>              - Serves static assets (CSS, JS, HTML)")
-    print("  GET  /health              - Health check")
-    print("  POST /predict             - Submit assessment for prediction")
-    print("  GET  /results             - Get assessment results (with filtering)")
-    print("  GET  /results/summary     - Get summary statistics")
-    print("=" * 60)
-
-    ensure_database_exists()
-
-    # Test database connection on startup
-    print("Testing MySQL connection...")
-    try:
-        db_connection = mysql.connector.connect(**config.MYSQL_CONFIG)
-    except Error as e:
-        print(f"Error connecting to MySQL: {e}")
-        db_connection = None
-
-    if db_connection and db_connection.is_connected():
-        print("[OK] MySQL connection successful")
-        db_connection.close()
-
-        # Try to create assessments table if it doesn't exist
-        try:
-            connection = mysql.connector.connect(**config.MYSQL_CONFIG)
-            if connection and connection.is_connected():
-                cursor = connection.cursor()
-                create_table_query = """
-                CREATE TABLE IF NOT EXISTS assessments (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    daily_screen_time_hrs FLOAT,
-                    academic_app_usage_hrs FLOAT,
-                    social_media_hrs FLOAT,
-                    study_hours_per_day FLOAT,
-                    study_frequency_per_week FLOAT,
-                    predicted_gwa FLOAT,
-                    performance_category VARCHAR(20),
-                    year_level VARCHAR(20),
-                    program VARCHAR(255),
-                    academic_term VARCHAR(20),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-                """
-                cursor.execute(create_table_query)
-                cursor.execute("SHOW COLUMNS FROM assessments")
-                existing_columns = {column[0] for column in cursor.fetchall()}
-                for column, column_type in (
-                    ('year_level', 'VARCHAR(20)'),
-                    ('program', 'VARCHAR(255)'),
-                    ('academic_term', 'VARCHAR(20)'),
-                ):
-                    if column not in existing_columns:
-                        cursor.execute(f"ALTER TABLE assessments ADD COLUMN {column} {column_type}")
-                connection.commit()
-                cursor.close()
-                connection.close()
-                print("[OK] Assessments table ready")
-        except Error as e:
-            print(f"Warning: Could not create assessments table: {e}")
-    else:
-        print("[X] MySQL connection failed - continuing without database storage")
-        print("  Please check your MySQL credentials in config.py")
-
-    print("=" * 60)
-
-    # Run the Flask app
-    app.run(
-        host=config.FLASK_CONFIG['HOST'],
-        port=config.FLASK_CONFIG['PORT'],
-        debug=config.FLASK_CONFIG['DEBUG']
-    )
+    app.run(host=os.environ.get('APP_HOST', '127.0.0.1'),
+            port=int(os.environ.get('APP_PORT', '5000')), debug=False)
