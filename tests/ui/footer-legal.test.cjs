@@ -4,8 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const root = path.resolve(__dirname, '../..');
-const source = fs.readFileSync(path.join(root, 'js/footer-legal.js'), 'utf8');
-const html = page => fs.readFileSync(path.join(root, 'html', page + '.html'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'frontend/js/footer-legal.js'), 'utf8');
+const html = page => fs.readFileSync(path.join(root, 'frontend/html', page + '.html'), 'utf8');
 const reply = (page, ok = true) => ({ ok, text: async () => html(page) });
 const tick = () => new Promise(resolve => setImmediate(resolve));
 

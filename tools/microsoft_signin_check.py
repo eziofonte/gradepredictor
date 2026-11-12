@@ -1,6 +1,6 @@
 r"""Loopback-only Microsoft sign-in proof. No assessment or production DB access.
 
-Run: venv\Scripts\python.exe tools/microsoft_signin_check.py --prompt
+Run: venv\Scripts\python.exe -m tools.microsoft_signin_check --prompt
 The secret is read without echo and held only in process memory.
 """
 

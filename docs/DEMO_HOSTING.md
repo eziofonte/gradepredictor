@@ -15,18 +15,18 @@ people to enter sensitive data.
 2. Install Cloudflare's `cloudflared` for Windows using the instructions at
    https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/
    and reopen any terminal after installation. The executable must be on PATH.
-3. Ensure port 5000 is free. Stop `dev-server.bat` or the separate Microsoft
+3. Ensure port 5000 is free. Stop `scripts/dev-server.bat` or the separate Microsoft
    sign-in check before starting the demo.
 
 ## Each demo session
 
-1. Start `demo-tunnel.bat`. Copy the complete `https://...trycloudflare.com`
+1. Start `scripts/demo-tunnel.bat`. Copy the complete `https://...trycloudflare.com`
    address printed in its window. Keep the window open.
 2. In Microsoft Entra, open your app registration, select **Authentication**,
    and add a **Web** redirect URI consisting of that address followed by
    `/auth/callback`. Save it. Keep your existing localhost URI. Microsoft may
    take a few minutes to apply the change.
-3. Start `demo-server.bat`, paste the tunnel address when asked, then enter the
+3. Start `scripts/demo-server.bat`, paste the tunnel address when asked, then enter the
    Microsoft client secret **Value** at the prompt. It appears on screen so you
    can check your paste; keep the terminal private and do not share screenshots
    showing the secret or place it in the tunnel URL.

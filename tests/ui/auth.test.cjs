@@ -3,27 +3,33 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { installMedia } = require('./media.cjs');
 const root = path.resolve(__dirname, '../..');
-const script = fs.readFileSync(path.join(root, 'js/auth.js'), 'utf8');
+const script = fs.readFileSync(path.join(root, 'frontend/js/auth.js'), 'utf8');
 const signedIn = { authenticated: true, user: { id: 42, name: 'SURNAME Very Long <img src=x onerror=alert(1)> Display Name' }, csrf_token: 'test-token' };
 const guest = { authenticated: false, user: null, csrf_token: 'guest-token' };
 const reply = (data, status = 200) => ({ ok: status >= 200 && status < 300, status, json: async () => data });
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-function setup(t, { page = 'history', narrow = false, fetch = async () => reply(signedIn), url, channel } = {}) {
-  const dom = new JSDOM(fs.readFileSync(path.join(root, 'html', page + '.html'), 'utf8'), {
+function setup(t, { page = 'history', narrow = false, width = narrow ? 1024 : 1440, fetch = async () => reply(signedIn), url, channel, nativeDialog = true } = {}) {
+  const dom = new JSDOM(fs.readFileSync(path.join(root, 'frontend/html', page + '.html'), 'utf8'), {
     url: url || 'https://example.test/' + page + '.html', runScripts: 'outside-only', virtualConsole: new VirtualConsole()
   });
   t.after(() => dom.window.close());
   const w = dom.window;
-  const media = new w.EventTarget();
-  media.matches = narrow;
-  w.matchMedia = () => media;
+  const resize = installMedia(w, width);
+  const media = w.matchMedia('(max-width: 1199px)');
+  w.scrollTo = () => {};
+  if (nativeDialog) {
+    w.HTMLDialogElement.prototype.showModal = function () { this.open = true; this.querySelector('[autofocus]')?.focus(); };
+    w.HTMLDialogElement.prototype.close = function () { this.open = false; this.dispatchEvent(new w.Event('close')); };
+  }
   w.AbortSignal = AbortSignal;
   w.fetch = fetch;
   if (channel) w.BroadcastChannel = class { constructor() { return channel; } };
+  w.eval(fs.readFileSync(path.join(root, 'frontend/js/assessment-drafts.js'), 'utf8'));
   w.eval(script);
-  return { w, d: w.document, media };
+  return { w, d: w.document, media, resize };
 }
 
 for (const page of ['index', 'hiw', 'assessment', 'history']) {
@@ -38,6 +44,8 @@ for (const page of ['index', 'hiw', 'assessment', 'history']) {
     assert.equal(d.querySelector('.account-name'), null);
     const first = new w.MouseEvent('click', { bubbles: true, cancelable: true });
     link.dispatchEvent(first);
+    assert.equal(first.defaultPrevented, false);
+    assert.equal(d.querySelector('#signin-dialog'), null);
     assert.equal(link.getAttribute('aria-busy'), 'true');
     const duplicate = new w.MouseEvent('click', { bubbles: true, cancelable: true });
     link.dispatchEvent(duplicate);
@@ -59,7 +67,7 @@ test('account preserves full name as text, closes with Escape, outside click and
   assert.equal(d.querySelector('.account-mobile-label').textContent, 'SURNAME');
   assert.equal(panel.querySelector('a'), null);
   assert.equal(panel.querySelectorAll('.account-panel-actions button').length, 1);
-  assert.equal(panel.querySelector('.account-panel-actions button').textContent, 'Sign out');
+  assert.equal(panel.querySelector('.account-panel-actions button').textContent, 'Sign Out');
   assert.equal(panel.hidden, true);
   trigger.click();
   assert.equal(panel.hidden, false);
@@ -95,7 +103,7 @@ for (const [raw, surname, fullName] of [
 test('the public shared stylesheet keeps desktop account controls compact', async t => {
   const { w, d } = setup(t);
   const sheet = d.createElement('style');
-  sheet.textContent = fs.readFileSync(path.join(root, 'style.css'), 'utf8');
+  sheet.textContent = fs.readFileSync(path.join(root, 'frontend/css/style.css'), 'utf8');
   d.head.append(sheet);
   await w.authReady;
   const style = selector => w.getComputedStyle(d.querySelector(selector));
@@ -119,8 +127,8 @@ test('loading has a reserved busy state and sign-in after a guest result returns
   assert.equal(new URL(link.href).searchParams.get('next'), '/#assessment');
 });
 
-test('mobile menu moves theme switch, excludes simultaneous panels, and restores focus', async t => {
-  const { w, d, media } = setup(t, { narrow: true });
+test('tablet menu moves theme switch, excludes simultaneous panels, and restores focus', async t => {
+  const { w, d, resize } = setup(t, { narrow: true });
   await w.authReady;
   const menu = d.querySelector('.nav-menu-toggle');
   const trigger = d.querySelector('.account-trigger');
@@ -132,8 +140,57 @@ test('mobile menu moves theme switch, excludes simultaneous panels, and restores
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   assert.equal(d.activeElement, menu);
   assert.equal(menu.getAttribute('aria-expanded'), 'false');
-  media.matches = false; media.dispatchEvent(new w.Event('change'));
+  resize(1440);
   assert.ok(d.querySelector('.nav-actions .theme-toggle'));
+});
+
+for (const auth of [guest, signedIn]) {
+  test(`phone drawer reuses controls, closes and restores breakpoint layout (${auth.authenticated ? 'account' : 'guest'})`, async t => {
+    const { w, d, resize } = setup(t, { width: 767, nativeDialog: true, fetch: async () => reply(auth) });
+    await w.authReady;
+    const drawer = d.querySelector('#mobile-navigation'), menu = d.querySelector('.nav-menu-toggle');
+    const account = d.querySelector('.account-slot');
+    assert.ok(drawer.contains(account));
+    assert.equal(d.querySelectorAll('.account-slot').length, 1);
+    assert.equal(d.querySelectorAll('.theme-toggle').length, 1);
+    menu.click();
+    assert.equal(drawer.open, true);
+    assert.equal(d.documentElement.classList.contains('mobile-nav-locked'), true);
+    assert.equal(d.activeElement.classList.contains('mobile-nav-close'), true);
+    if (auth.authenticated) {
+      d.querySelector('.account-trigger').click();
+      assert.equal(drawer.open, true);
+      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape' }));
+      assert.equal(d.querySelector('#account-panel').hidden, true);
+      assert.equal(drawer.open, true);
+    }
+    d.querySelector('.mobile-nav-close').click();
+    assert.equal(drawer.open, false);
+    assert.equal(d.activeElement, menu);
+    assert.equal(d.documentElement.classList.contains('mobile-nav-locked'), false);
+    menu.click();
+    resize(768);
+    assert.equal(drawer.open, false);
+    assert.equal(drawer.hidden, true);
+    assert.ok(d.querySelector('.nav-actions').contains(account));
+    assert.ok(d.querySelector('.nav-disclosure .theme-toggle'));
+    resize(1440);
+    assert.ok(d.querySelector('.nav-actions .theme-toggle'));
+    resize(390);
+    menu.click();
+    drawer.dispatchEvent(new w.Event('cancel', { cancelable: true }));
+    assert.equal(drawer.open, false);
+    assert.equal(d.activeElement, menu);
+  });
+}
+
+test('phone navigation keeps the original disclosure when native dialogs are unavailable', async t => {
+  const { w, d } = setup(t, { width: 390, nativeDialog: false });
+  await w.authReady;
+  assert.ok(d.querySelector('.nav-disclosure .nav-links'));
+  assert.ok(d.querySelector('.nav-actions .account-slot'));
+  d.querySelector('.nav-menu-toggle').click();
+  assert.equal(d.querySelector('.topnav').classList.contains('nav-open'), true);
 });
 
 test('failed session lookup offers Retry and History recovers using the new auth promise', async t => {
@@ -143,7 +200,7 @@ test('failed session lookup offers Retry and History recovers using the new auth
     resultCalls++;
     return reply({ results: [], pagination: { total: 0, has_more: false } });
   }});
-  w.eval(fs.readFileSync(path.join(root, 'js/history.js'), 'utf8'));
+  w.eval(fs.readFileSync(path.join(root, 'frontend/js/history.js'), 'utf8'));
   await assert.rejects(w.authReady); await tick();
   assert.equal(d.querySelector('.microsoft-signin'), null);
   assert.match(d.querySelector('.account-unavailable').textContent, /Account unavailable/);
@@ -155,12 +212,13 @@ test('failed session lookup offers Retry and History recovers using the new auth
 
 test('guest History uses full Microsoft button and offers guest assessment', async t => {
   const { w, d } = setup(t, { fetch: async () => reply(guest) });
-  w.eval(fs.readFileSync(path.join(root, 'js/history.js'), 'utf8'));
+  w.eval(fs.readFileSync(path.join(root, 'frontend/js/history.js'), 'utf8'));
   await w.authReady; await tick();
   const state = d.querySelector('#history-empty');
   assert.match(state.textContent, /PLM school account/);
   assert.equal(state.querySelector('.microsoft-short-label'), null);
-  assert.ok(state.querySelector('a[href="/#assessment"]'));
+  assert.ok(state.querySelector('a[href="/?scroll=assessment"]'));
+  assert.equal(d.querySelector('.history-heading .btn-primary'), null);
 });
 
 test('sign-out disables repetition, retains private data on failure, and clears on confirmed retry', async t => {
@@ -177,6 +235,7 @@ test('sign-out disables repetition, retains private data on failure, and clears 
   d.querySelector('.account-trigger').click();
   const logout = d.querySelector('.account-panel-actions button');
   logout.click(); logout.click();
+  await tick();
   assert.equal(logoutCalls, 1); assert.equal(logout.disabled, true);
   assert.equal(logoutHeaders['X-CSRFToken'], signedIn.csrf_token);
   assert.equal(logoutHeaders['X-Expected-User'], '42');
@@ -190,10 +249,73 @@ test('sign-out disables repetition, retains private data on failure, and clears 
   assert.equal(tbody.textContent, '');
 });
 
+test('fresh auth returns a new CSRF token but rejects a changed account before a write', async t => {
+  let current = signedIn;
+  const { w } = setup(t, { fetch: async () => reply(current) });
+  await w.authReady;
+  assert.equal(typeof w.getFreshAuth, 'function');
+  current = { ...signedIn, csrf_token: 'fresh-token' };
+  assert.equal((await w.getFreshAuth()).csrf_token, 'fresh-token');
+  let reason;
+  w.addEventListener('auth:cleared', event => { reason = event.detail; });
+  current = { ...signedIn, user: { id: 99, name: 'Other' } };
+  await assert.rejects(w.getFreshAuth(), /changed/);
+  assert.equal(reason.reason, 'identity-changed');
+  assert.equal(reason.userId, '42');
+});
+test('sign-out received during initial account lookup prevents a stale response from restoring drafts', async t => {
+  for (const returned of [signedIn, guest, { ...signedIn, user: { id: 99, name: 'Other account' } }]) {
+    let resolve;
+    const { w, d } = setup(t, { page: 'index', fetch: () => new Promise(r => { resolve = r; }) });
+    w.eval(fs.readFileSync(path.join(root, 'frontend/js/assessment.js'), 'utf8'));
+    d.dispatchEvent(new w.Event('DOMContentLoaded'));
+    d.getElementById('studyHours').value = '7';
+    d.getElementById('studyHours').dispatchEvent(new w.Event('input'));
+    w.dispatchEvent(new w.StorageEvent('storage', { key: 'acad-perf:auth-event', newValue: JSON.stringify({ type: 'signed-out', id: '42', eventId: 'during-lookup' }) }));
+    const rejected = assert.rejects(w.authReady, /changed/);
+    resolve(reply(returned));
+    await rejected; await tick();
+    assert.equal(w.authInvalidated, true);
+    assert.equal(d.getElementById('studyHours').value, '');
+    assert.equal(w.AssessmentDrafts.read('user:42'), null);
+  }
+});
+
+test('navigation preservation and fallback sign-out cleanup work without an assessment form', async t => {
+  const { w } = setup(t);
+  await w.authReady;
+  const item = { version: 1, revision: w.crypto.randomUUID(), updatedAt: w.Date.now(), step: 0,
+    values: { yearLevel: '', academicTerm: '', program: '', screenTime: '4', academicPhoneUse: '', socialPhoneUse: '', studyHours: '', studyDays: '' }, pendingSubmission: null };
+  w.AssessmentDrafts.write('user:42', item);
+  w.invalidateAuth('navigation');
+  assert.ok(w.AssessmentDrafts.read('user:42'));
+  // A fresh page receives another tab's sign-out via the storage fallback.
+  const next = setup(t); await next.w.authReady;
+  next.w.AssessmentDrafts.write('user:42', item);
+  next.w.dispatchEvent(new next.w.StorageEvent('storage', { key: 'acad-perf:auth-event', newValue: JSON.stringify({ type: 'signed-out', id: '42', eventId: 'test-event' }) }));
+  assert.equal(next.w.AssessmentDrafts.read('user:42'), null);
+  assert.equal(next.w.authInvalidated, true);
+});
+
+test('sign-in links navigate directly, preserve assessment targets and allow modified clicks', async t => {
+  const { w, d } = setup(t, { page: 'index', url: 'https://example.test/#assessment', fetch: async () => reply(guest) });
+  await w.authReady;
+  const link = d.querySelector('.microsoft-signin');
+  const modified = new w.MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true });
+  link.dispatchEvent(modified);
+  assert.equal(modified.defaultPrevented, false);
+  assert.equal(link.hasAttribute('aria-disabled'), false);
+  const click = new w.MouseEvent('click', { bubbles: true, cancelable: true });
+  link.dispatchEvent(click);
+  assert.equal(click.defaultPrevented, false);
+  assert.equal(new URL(link.href).searchParams.get('next'), '/#assessment');
+  assert.equal(d.querySelector('#signin-dialog'), null);
+});
+
 test('late History responses cannot restore records after private content is cleared', async t => {
   let complete;
   const { w, d } = setup(t, { fetch: async url => url === '/auth/session' ? reply(signedIn) : await new Promise(resolve => { complete = resolve; }) });
-  w.eval(fs.readFileSync(path.join(root, 'js/history.js'), 'utf8'));
+  w.eval(fs.readFileSync(path.join(root, 'frontend/js/history.js'), 'utf8'));
   await w.authReady; await tick();
   w.dispatchEvent(new w.PageTransitionEvent('pagehide', { persisted: true }));
   complete(reply({ results: [{ id: 1, created_at: '2026-11-11T00:00:00Z', predicted_gwa: 2.15 }], pagination: { total: 1, has_more: false } }));

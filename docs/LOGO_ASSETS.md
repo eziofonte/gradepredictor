@@ -2,9 +2,9 @@
 
 The supplied book/tree logo was edited using the built-in imagegen tool to remove its cream background. The transparent result was cropped, centered and resized for use as a site icon.
 
-- `assets/logo.png`: 512 × 512 transparent website logo.
-- `assets/logo.jpg`: 512 × 512 JPEG copy on white, using the requested filename. JPEG does not support transparency.
-- `assets/favicon.png`: 64 × 64 transparent browser tab icon in `#ECE8DC`, matching the system's dark-theme text color (`--ink-light`), as requested by the user.
+- `frontend/assets/logo.png`: 512 × 512 transparent website logo.
+- `frontend/assets/logo.jpg`: 512 × 512 JPEG copy on white, using the requested filename. JPEG does not support transparency.
+- `frontend/assets/favicon.png`: 64 × 64 transparent browser tab icon in `#ECE8DC`, matching the system's dark-theme text color (`--ink-light`), as requested by the user.
 
 The PNG is used in the four existing navigation headers and the three existing footers. All six pages reference the favicon. The dark theme displays the mark in white for contrast; the light theme preserves its teal color. No additional logo placements were added.
 

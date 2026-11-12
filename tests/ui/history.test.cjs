@@ -8,7 +8,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 const reply = (records = [], total = records.length, status = 200) => ({ ok: status === 200, status, json: async () => status === 200 ? { results: records, pagination: { total, has_more: total > records.length } } : { error: 'Service unavailable' } });
 const record = (id = 1) => ({ id, created_at: '2026-11-10T16:30:00Z', year_level: '2nd Year', academic_term: '1st Sem', program: 'BSIT', predicted_gwa: 2.15, performance_category: 'Good', daily_screen_time_hrs: 4, academic_app_usage_hrs: 0, social_media_hrs: 2, study_hours_per_day: 3, study_frequency_per_week: 5 });
 function setup(t, { fetch = async () => reply([record()]), phone = false } = {}) {
-  const dom = new JSDOM(fs.readFileSync(path.join(root, 'html/history.html'), 'utf8'), { url: 'https://example.test/history.html', runScripts: 'outside-only', virtualConsole: new VirtualConsole() });
+  const dom = new JSDOM(fs.readFileSync(path.join(root, 'frontend/html/history.html'), 'utf8'), { url: 'https://example.test/history.html', runScripts: 'outside-only', virtualConsole: new VirtualConsole() });
   t.after(() => dom.window.close());
   const w = dom.window, d = w.document;
   const media = new w.EventTarget(); media.matches = phone;
@@ -16,6 +16,8 @@ function setup(t, { fetch = async () => reply([record()]), phone = false } = {})
   w.fetch = fetch;
   w.AbortSignal = AbortSignal;
   w.authReady = Promise.resolve({ authenticated: true, user: { id: 42 }, csrf_token: 'csrf-test' });
+  w.getFreshAuth = () => w.authReady;
+  w.invalidateAuth = reason => { w.authInvalidated = true; w.dispatchEvent(new w.CustomEvent('auth:cleared', { detail: { reason, userId: '42' } })); };
   w.authHeaders = () => ({ 'X-CSRFToken': 'csrf-test', 'X-Expected-User': '42' });
   w.createMicrosoftSignIn = returnTo => { const link = d.createElement('a'); link.href = '/auth/login?next=' + encodeURIComponent(returnTo); link.textContent = 'Sign in with Microsoft'; return link; };
   d.querySelectorAll('dialog').forEach(dialog => {
@@ -23,14 +25,14 @@ function setup(t, { fetch = async () => reply([record()]), phone = false } = {})
     dialog.close = () => { dialog.removeAttribute('open'); dialog.dispatchEvent(new w.Event('close')); };
   });
   const submit = () => d.querySelector('form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
-  w.eval(fs.readFileSync(path.join(root, 'js/history.js'), 'utf8'));
+  w.eval(fs.readFileSync(path.join(root, 'frontend/js/history.js'), 'utf8'));
   return { w, d, media, submit };
 }
 
 test('the initial loading panel disappears once records are loaded', async t => {
   const { w, d } = setup(t);
   const stylesheet = d.createElement('style');
-  stylesheet.textContent = fs.readFileSync(path.join(root, 'style.css'), 'utf8');
+  stylesheet.textContent = fs.readFileSync(path.join(root, 'frontend/css/style.css'), 'utf8');
   d.head.append(stylesheet);
   await tick();
   const loading = d.querySelector('#history-empty');
@@ -75,6 +77,26 @@ test('invalid inclusive date range is explained beside fields and never fetched;
   assert.doesNotMatch(calls.at(-1), /date_from|date_to/);
   assert.equal(d.querySelector('#date-from').value, '');
   assert.equal(d.querySelector('#history-applied-filters').textContent, 'All assessments');
+});
+
+test('typed dates outside the supported range are rejected before fetching history', async t => {
+  const calls = [];
+  const { d, submit } = setup(t, { fetch: async url => { calls.push(url); return reply([record()]); } });
+  await tick();
+  const from = d.querySelector('#date-from'), to = d.querySelector('#date-to');
+  from.max = to.max = '2026-11-12';
+  from.value = '2026-08-31';
+  submit();
+  assert.equal(calls.length, 1);
+  assert.equal(d.activeElement, from);
+  assert.match(d.querySelector('#history-date-error').textContent, /September 1, 2026/);
+  from.value = '2026-09-01'; to.value = '2026-11-13';
+  submit();
+  assert.equal(calls.length, 1);
+  assert.equal(d.activeElement, to);
+  to.value = '2026-11-12'; submit(); await tick();
+  assert.match(calls.at(-1), /date_from=2026-09-01/);
+  assert.match(calls.at(-1), /date_to=2026-11-12/);
 });
 
 test('desktop table and phone cards expose one presentation; dates use Manila time and values are text', async t => {

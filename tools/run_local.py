@@ -1,9 +1,7 @@
-"""Start the local app without storing or displaying its Microsoft secret."""
-import getpass
+"""Start the local app with a visibly entered Microsoft secret."""
 import os
 import secrets
 import sys
-import warnings
 
 from waitress import serve
 
@@ -11,12 +9,10 @@ from waitress import serve
 def main():
     if not os.environ.get('PLM_CLIENT_SECRET'):
         try:
-            with warnings.catch_warnings():
-                warnings.simplefilter('error', getpass.GetPassWarning)
-                value = getpass.getpass('Microsoft client secret Value (hidden): ')
-        except (getpass.GetPassWarning, EOFError):
-            sys.exit('A terminal with hidden input is required.')
-        if not value.strip():
+            value = input('Microsoft client secret Value (visible): ').strip()
+        except EOFError:
+            sys.exit('A terminal is required to enter the client secret.')
+        if not value:
             sys.exit('The client secret is required for sign-in.')
         os.environ['PLM_CLIENT_SECRET'] = value
     # A new local key invalidates stale CSRF tokens on restart; account sessions

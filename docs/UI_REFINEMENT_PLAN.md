@@ -110,7 +110,7 @@ duplicate sign-out suppression, failure/retry, and late History responses after
 clearing private content. These DOM tests do not verify rendered geometry,
 color contrast, or the actual progressive blur. See `tests/ui/README.md` to rerun.
 
-The unmodified logo in `assets/icons/microsoft.svg` was downloaded from
+The unmodified logo in `frontend/assets/icons/microsoft.svg` was downloaded from
 [Microsoft's official branding assets](https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg).
 The button follows the full/short labels and light/dark treatments in
 [Microsoft's branding guidance](https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-branding-in-apps).
@@ -385,12 +385,12 @@ motion preferences and avoid hover-only actions.
    to refine the existing phone layout, portrait/landscape behavior, navigation,
    forms, History, dialogs, and touch interactions.
 
-Keep JS behavior in the existing `js/auth.js` and `js/history.js`. Shared spacing
-and navigation belong in `style.css`; put substantial account/history-specific
+Keep JS behavior in `frontend/js/auth.js` and `frontend/js/history.js`. Shared spacing
+and navigation belong in `frontend/css/style.css`; put substantial account/history-specific
 styling in `css/account.css` and `css/history.css` if separation improves clarity.
 If new CSS files are added, expose only those public assets through an explicit
 Flask route and add the stylesheet links. Place the official logo in
-`assets/icons/`. Preserve current uncommitted work.
+`frontend/assets/icons/`. Preserve current uncommitted work.
 
 Avoid a framework migration or a rebuild of the prediction calculation. Keep
 charts, exports, record editing, account settings, and administrator tools out

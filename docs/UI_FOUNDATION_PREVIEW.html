@@ -6,8 +6,8 @@
   <title>UI foundation preview — fictitious examples</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../style.css">
-  <script src="../js/theme-toggle.js"></script>
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <script src="../frontend/js/theme-toggle.js"></script>
   <style>
     /* Review-only layouts; live history implementation belongs to step three. */
     .preview-stack { display: grid; gap: var(--sp-3); }
@@ -34,13 +34,13 @@
   <nav class="topnav" aria-label="Main navigation">
     <div class="nav-brand">Academic Performance Predictor</div>
     <div class="nav-links">
-      <a href="../html/index.html#hero">Home</a>
-      <a href="../html/index.html#how-it-works">How It Works</a>
-      <a href="../html/index.html#assessment">Assessment</a>
-      <a href="../html/history.html" class="active">History</a>
+      <a href="../frontend/html/index.html#hero">Home</a>
+      <a href="../frontend/html/index.html#how-it-works">How It Works</a>
+      <a href="../frontend/html/index.html#assessment">Assessment</a>
+      <a href="../frontend/html/history.html" class="active">History</a>
     </div>
     <div class="nav-actions">
-      <div class="account-controls"><span class="account-name" title="Example Student With A Long Display Name">Example Student With A Long Display Name</span><button class="btn-secondary account-button" disabled>Sign out</button></div>
+      <div class="account-controls"><span class="account-name" title="Example Student With A Long Display Name">Example Student With A Long Display Name</span><button class="btn-secondary account-button" disabled>Sign Out</button></div>
       <label class="switch theme-toggle">
         <input type="checkbox" aria-label="Switch theme">
         <span class="slider"></span>
@@ -50,7 +50,7 @@
   <main class="page page--history preview-stack">
     <div class="status"><strong>Static design preview — all records and names are fictitious.</strong> Only the theme switch and navigation links work. Account, filter, and record actions will be implemented in later steps.</div>
     <header class="header preview-heading">
-      <div><h1>Your assessment history</h1><p class="subtitle">Review the estimates saved to your PLM account.</p></div>
+      <div><h1></h1><p class="subtitle">Review the estimates saved to your PLM account.</p></div>
       <button class="btn-primary" disabled>New assessment</button>
     </header>
     <p class="text-secondary preview-note">Only you can access your saved assessments.</p>

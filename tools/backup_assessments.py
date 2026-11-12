@@ -4,7 +4,7 @@ from pathlib import Path
 import secrets
 
 from mysql.connector.conversion import MySQLConverter
-from acad_history.database import connect
+from acad_perf.history.database import connect
 
 
 def backup_assessments(destination):

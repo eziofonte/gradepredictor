@@ -1,6 +1,16 @@
 {
   "name": "acad-perf-ui-checks",
   "private": true,
-  "scripts": { "test": "node --test *.test.cjs" },
-  "devDependencies": { "jsdom": "^27.0.0" }
+  "scripts": {
+    "test": "node --test *.test.cjs",
+    "test:baseline": "node browser.cjs --baseline",
+    "test:desktop": "node browser.cjs",
+    "test:mobile": "node browser.cjs --mobile",
+    "test:resume": "node resume-browser.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "^27.0.0",
+    "playwright-core": "^1.65.0",
+    "pngjs": "^7.0.0"
+  }
 }

@@ -39,11 +39,11 @@ extracts these identifiers without displaying the full Microsoft response.
 ## Run the check locally
 
 Stop the estimator first if it is already using port 5000. Double-click
-`check-microsoft-signin.bat`, or run from the repository root:
+`scripts/check-microsoft-signin.bat`, or run from the repository root:
 
 ```powershell
-.\venv\Scripts\python.exe -m pip install -r requirements-signin-check.txt
-.\venv\Scripts\python.exe tools\microsoft_signin_check.py --prompt
+.\venv\Scripts\python.exe -m pip install -r requirements.txt
+.\venv\Scripts\python.exe -m tools.microsoft_signin_check --prompt
 ```
 
 At the hidden prompt, paste the replacement client secret **Value** and press
@@ -59,7 +59,10 @@ Press Ctrl+C in the terminal when finished.
 This is a separate, loopback-only proof, not a production authentication server.
 It uses temporary in-memory server sessions for ten minutes, has no database
 connection, does not save assessments, and does not modify the existing app.
-Production sessions will use MySQL and the eight-hour policy in the master plan.
+The main app uses persistent MySQL sessions that expire eight hours after sign-in.
+Sign-in links go directly to Microsoft. Requests do not extend the deadline, and
+logout revokes the current browser session. See DEPLOYMENT.md for cleanup and
+persistence.
 
 Optional environment overrides are `PLM_CLIENT_ID`, `PLM_TENANT_ID`, and
 `PLM_CLIENT_SECRET`. Prefer the hidden prompt for interactive testing rather than

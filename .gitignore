@@ -3,11 +3,16 @@ __pycache__/
 *.pyc
 .pytest_cache/
 node_modules/
+venv/
+.venv/
 backups/
 .env
+*.log
 
 # Editor/OS junk
 .DS_Store
+.vscode/*
+!.vscode/settings.json
 
 # Local config with real DB credentials
 config.py
@@ -19,3 +24,5 @@ config.py
 *.phase3-backup
 academic-performance-webapp-BACKUP-*/
 academic-performance-webapp-BACKUP-*.tar.gz
+.vscode/ 
+ 

@@ -4,7 +4,7 @@ import uuid
 import mysql.connector
 import pytest
 
-from acad_history.database import mysql_settings
+from acad_perf.history.database import mysql_settings
 from tools.backup_assessments import backup_assessments
 
 

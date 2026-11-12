@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>How It Works - Academic Performance Predictor</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=text-white-1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: {
+        preflight: false
+      },
+      theme: {
+        extend: {
+          colors: { cream: '#FAF6EF', maroon: '#7A1E2B', gold: '#B08D3D' }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../css/style.css?v=drafts-2" />
+  <script src="../js/theme-toggle.js?v=circular-theme-1"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <nav class="topnav" aria-label="Main navigation">
+    <a class="nav-brand" href="index.html"><img class="brand-logo nav-mark" src="../assets/logo.png" alt="" width="36" height="36" /><span class="nav-brand-full">Academic Performance Predictor</span><span class="nav-brand-short" aria-hidden="true">Academic Predictor</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="hiw.html" class="active" aria-current="page">How It Works</a>
+      <a href="assessment.html">Assessment</a>
+      <a href="history.html">History</a>
+
+    </div>
+    <div class="nav-actions">
+      <label class="theme-toggle">
+        <input id="checkbox" type="checkbox" role="switch" aria-checked="false" aria-label="Switch to light theme" />
+        <span class="theme-toggle-face" aria-hidden="true">
+          <svg class="theme-toggle-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" focusable="false">
+            <circle cx="12" cy="12" r="4.5" />
+            <path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.2 4.2 7 7M17 17l2.8 2.8M4.2 19.8 7 17M17 7l2.8-2.8" />
+          </svg>
+          <svg class="theme-toggle-moon" viewBox="0 0 24 24" fill="currentColor" focusable="false">
+            <path d="M10.5 1a11 11 0 1 1-9.4 17A11 11 0 0 0 10.5 1Z" />
+          </svg>
+        </span>
+      </label>
+    </div>
+  </nav>
+
+  <main class="page" id="main-content" tabindex="-1">
+    <!-- Layout adapted from Hirael FAQ 5 (MIT), Mohammad Shehadeh: https://github.com/MohammadShehadeh/hirael -->
+    <section id="how-it-works" class="how-works" aria-labelledby="page-how-heading">
+      <!-- Decorative PLM torch: static ASCII derived from assets/PLM2.jpg, behind the opaque card. -->
+      <pre class="how-works-torch" aria-hidden="true">                                                                          :
+                                                                     ;:;:;:;
+                                                                     @:;:;8:,
+                                                                     88;:@880
+                                                                     0888@8@88
+                                                                     @888@8@@@:
+                                                                     @8@*88@8@O
+                                                                     @8@O0@@@@8
+                                                                     88@O08@8@8
+                                                                     OO8o8@@@@@;
+                                                                    8:08o88@8@8;
+                                                                   @@88@088@@@8;
+                                                                   000O@00O@8@0;
+                                                                  @@0Oo@08*@o+O
+                                                                 @*O808@O0OO08
+                                                                @OO0@@@@088@88
+                                                               @oOo@8@8@0@8@8*
+                                                             @0**08@@@088@8@8;
+                                                            :@**O08@8@O88@8@0=O
+                                                           @OOo0O@@@@00@8@8@**O
+                                                          80O0o08@8@800@8@8@:+O8
+                                                         @@0O008@@@@880@8@8@:+O8
+                                                        8=08O80@8@8@O@0@8@8@;+o8O
+                                                        @o0808@@@@@@O88@8@8@o+o0o8
+                                                       @,*080@8@8@8@O88@8@080=+oo0O
+                                                      @@**0@@@@@@@@@0@8@8@880==oo888
+                                               8      80o08@8@8@8@8@O88@8@88O=;+O8O8=
+                                              :0:     8OO08@@@@@@@@+O88@8@8@00;+o0O@0+
+                                              :0:;    O08@8@8@8@8@;:O88@8@8@00;=*OO@0==
+                                              :0:;,880o@@@@@@@@@@=:0088@8@8@88;==ooO08;+=
+                                              :0O;:@8@O@8@888@8@80:*088@8@8@88+=;**o08;+==
+                                              0Oo;:@8@O0@@@@888@88@:888@8@8@8@0=;++oO80==*o
+                                             ;+o*;8@8@oo8@8@OOO@8@0.8@0@8@8@880;:=+**800;+oOO
+                                             ;+**;0@8@+*@@@@o08@@@;,=@8@8@8@8@0*:==**o8@0==OO80008       0
+                                            :;;+,08@8@;@8@8@o@8@8+.:,@8@8@8@8800,;;++*+@8@;O0@8008       O.
+                                           ;:=;=,@@@@=@@@@@@8@@@8;...=8@8@8@8@88:;;++*+O@@8@@@@0O00      O,
+                                           ;:,:+8@8@*@8@8@8@8@8@;;...==@8@8@8@08O::==*+*80o@8@8OO0O0     O,,
+                                          :8:,.@@@@08@@@@@@@:@8@:,:+=+=88@8@8@08O+:==++**0O@8@0Oo0O0O0   O8,
+                                         ;,;=:8@8@8@8@8@8@:;:@8=,..+=+=*8@8@8@08O0:;;+=*++0@8@0o*OOOoOo  oO,
+                                        :,8@:@@@@@@@@@@@:;:@@;:=:..+=+=*=@8@8@08O0*;;==+=+0@8@O*+0*ooOo*+*+,
+                                       ;.:8@8@8@*@8@8@8@:;:;:;.,.,.,==;+=@8@O800O0o::;;==+088@0=O0+o*o+++*=,
+                                      :,:+@@@@@*@@@@@@@@:;@@@;o,.,,:++=+++88O808O0OO:;;==+8@8@0*o0+**o=+=*+:.
+                                     ;..,@8@8@8@8@8@8@8;:@8@8;o;.+.:.*=+++O@0800O0OOo;:;;o0@880++O=*+*=+=+=0.
+                                     ;..:@@@@@@@@@@@@@@;:@@@@;*==+,+=*+*+0@@O80800O0OO:;;O8@8@0+=*=*+*;+=+=+,:
+                                    :..;8@8@8@8@8@8@8@:;:@8@8;*0=+==;==++@8@+000O0O0OO*;:O8@880+;+O+=+:=;=;=0,
+                                   ;.;:@@@@@@@@@@@@@8;:;:@@@@@8o;+;==+=*@@@@*;080000O0o+:O8@880=;==8=+:=;=;=;:,
+                                  :::;:@8@8@888@8@8@8;:;8@8@8;8*O=;==+=o8@8@8.:8O0O0O0oo=o888@0=;=;=O=,;:=;=;8.,
+                                 ;:;:@@@@@@@@@@@@@@8@;:;@@@@@@8@*=;+=++@@@8@8:::O0O800OO*o8@8@0=;=;=;::;:;;=;=8,
+                                :;:;8@8@8@8@0@8@8@8@8@:@8@8@8@8@oO;+=++@8@8@8O:.:0o0O0OO**0@0@0;:;;;;=::,;:;:=08,
+                               ;:;;@8@@@8@8@8@8@8@:@@@:@@@@@@@8@8o=*+*+@@@@@8@:,.;OOO0OO*o0@0@0=:;;=;=:;,;:;:;;8,
+                              :;:;8@8@8@8@888@8@0;.@8@:;8@8@8@8@8@;*=*+@8@8@8@,;..,:o0OO+*:@08O;:;:;:;:=,;:;:;:*0
+                             ;:O,@8@8@8@8@0@8808:;:08@:;@@8@8@8@8@8++*0@@@@@@@0,.,..+0O0+*0@880;:;:=;;;=;;:;:;:=00
+                             ;,:;@8@8@8@8@8@88O;:;:;8@8;8@8@8@8@8@8O+*0@8@8@8@8;....,oO0=+O0080;:;:;:;;=:*,;:;:;;8
+                            :::=8@8@8@8@8@8@8o:=:;:;8@@@8@8@8@8@8@8;**@@@@@@8@@=.....;O0=+:0o0O;:;:=;=;=;=:::;:;:08
+                           ;::,@080@8@8@8@8@0;:;:;:;:@8@8@8@8@8888080*0@8@8@8@8@......=O;,0@0OO;:;:;;=;=;==0,;:;:;0
+                           ;,;8;0@8@8@8@8@@@0;;;:;:;:@8@8@8@8@88080808O@8@8@8@8@=,.....:;+o808O=:;;=;=;==+=8,;,;:;0
+                          :,,;0808088@8@8@8@0=:;:;:;:;0@8@88080808O0O0*@8@8@8@8@8;.....,;+*0O0O;:=:=;=;==+=*0:,::;;
+                          :;:808080@8@8@8@8@8;:;:;:;:,0@8@880808O0O0O0O@8@8@8@8@8+:,...,=*=*oOo=.O;=;==+=++*O0:::;:;
+                         ;:;;0080808088@08088=:;:;:;:.,oO00008O0O0O0OOo08@8@8@8@8@,:,...;+=++o*;:o;=;==+=*+**0.:.;::
+                         ;.;O00808088@80088@8::;:;:;:...o0O0O0O0O0O0O0OO0@8@8@8@8@0;,..,.+=*+o*;,o=;;+=*+o*oo0o..;::
+                         ,::O0O00808080OO0O80o:;:;:;:...,OoOo0O0O0OOoOoO8@8@8@8@080+,:...O+++*+=,*=;;++*+o*Oo0o+.::;
+                        :;::o0O008080800OOO008.;:;:;:....:OOoOO0O0O0OOoo+@8@8@8@0888:;.,.o+*+**==+=;=++o*OoOo8O:,:.;
+                        ,;::*Oo0O000080oO0O0O0,;:;:;:.....=ooOoOoOOOoOoo=@8@88080808O::..O**+*+===;:+O+o*OoOo8O:,:..:
+                        .;::*oOOOOO80800O8O8000;:;:.:......0O0O0OOoO**+*==8@0@08080800:;:ooOoo*=;00@:**ooOoOO@O:,;.,:
+                        .;,:+OoOooO0O0O0O8O0O0O=::,.,......=O0OOoOoo**+*;=;@0800O000O0;;:,oOoO*=*o::;**o*OoOO8OO=...,
+                        .;::+ooOo*O0O0O:08O0O0O0;;,.::.....:+0OO**+*+o=+;=;O08080000O0O;:=O0OO*+o=;:=o*ooOo0O8OO,.:,,
+                        .;.:+*+o**o0oO=:00O0O0OO*;,:,......:;o+*++=+=+=+:;;:0800O0O0O0O8;,oOoo*==;;:+**o*OoOO0oO*:..,
+                        .;..+*+***oOoO::O0O0O0OOoO,;,:......;*=*+*+*=+=+:;::,808O0O0O0O00,oOoo*+==:;+**ooOo0OooO*;:;,
+                        ...:+*=++**O*o,;O0O0OOoOoo+,,:,.....,+=+=+=+=+==:;::.;00O0O0O0oo*o=o*o*+==:++**o*OoOOooO*;:;:
+                        ,,..;+=+=*+O**,.O0O0OOOOO0Oo*;,.....,+=*+*++=+=;,;::..=0O0O0O0OOo0;+*o**;,;*+**o*Oo00ooO*;:;:
+                         ....+==;*+o**:.o0OOoOoOoo**+*+:.....==*++=+=+=:,:,:,:.OOOoOoOoOoOO++*+=;,;+=*+**ooO*o*o=::;:
+                         ,...:+==*+o**;.*0OOoOoo*o+*+**o;....=+*+*=+=+=:.:,:,:.,+OoOoOOOoOoO+o==.,;==++**ooO*O*o:;:::
+                         ......+=++*++=.,ooO*o**++=*+*=++*;..=;*=+=+=+=..:,:,:..:o+o*OoOoO*o+*==;;;=;+=++**0+o*o:;:;:
+                          ....,*=++**o+;:+*o*o+*++++=+=+=+=+:+;*++=++*=..:,:,:.,:=*o*oo0oO*o*o=;;;:;;+=+=*+o*o**:;=;
+                          .....+=+=*=*=:,:+*+*=+=+=+==;=;=;==+;o++=+++=..:,:,:..:;:**o*OoO*o*oo=..:;;=;+=++**o*::;=;
+                          .....:=+=*+*++:;=*+*++=+=+==;=;+=+=+=++*=+=*=:,:::,...:;;=;*+**o*o*o*o.;:;;====++o*o==;=+;
+                          .....,===+=+==:;,+=+=+=+==;=;=;=;===;=;*=+=+;:,;::....:=;=;;=++o*o*o**,.:;;=;=;=+o**;=;;=
+                           ,.,.;,+=+=+=+=;:;;==+=+=+;=;=;=;==+==;=;*+*+;:=::..:;;=;=:,.++**ooo**+::;;;;=;++o*==++::
+                           =:;...+;==+;=;+:;:=;=;=;=;=;=;=;=;=;=;=;=;*;;::::...=;=;=....,++**o**==,::;:;;=+**==+=::
+                           :;=:,.+=+=+==;=;=:;:+;=;+;=;=;=;=;=;=;=;=;==;::...:0=;=;..,...;=**O*o++.;:;:;;*+:;+=*,;
+                            +=:;..==;=;=;=;=;;::;=;=;=;=;=;=;=;;:=;;:;:;,:...:;=;=:..,::,..=*o*o+*:;:;:;;*+=;+=,.:
+                            ,,;=:;:===;=;=;===;;:::=;=;=;=;=;=;=;=;;:;:;::...;;=;+.,.,,;;;.:=o*o**:;:=:;=**==+=:,
+                             +*=:;::;=:=:;:;:+;=;;..,;;=:;;=:=;=;=:;:;:;:;=.,;;=;:.....::.:..*+o**:;:;:==*=++o,,.
+                             :=O;=;;:+;=;=;=;;;+;=::....,::;:=;=;=;=;=;=;=;,:;;=:..,....:;.,.;+o**:=:;:++o=**:,:
+                              .+;=;=::;=:;:;:;:=;+;=::,..:,.....:;:;;;:;:=:,;;;;:.......:.....=*++:;:;:++*=++,.,
+                               *==+=;=:;;;:;:;;;;==+==::,::..,.....::;;;:=;;:==;.......;:,.:==;+++:;;;;*++=+.,.
+                                ==;;;=;;:=:;:;:;:;;;=+==,:,;.........::;:;,;,;;........;;,.,=+;===,+;;=*+*++.,
+                                 ===:=*=:;;;:;:;:;:=;==+=+:;,...........:;:;:;:......,;,.,..;+==;;:;;+=*OO+,.,
+                                   =:;;;;+;=:;:;:;:;:;:;==;=,:..........,;:;:;:......=;,.....+;=:::==+=Oo+.,.
+                                    ;;:=:;,=;=:;:;:;:;;=;;=;;;.....,....,::=;;:;...,;+=,.....,;;,;;;=++o=,.:
+                                      :;:=:;;=;;..,:,:,;:=:=:=;:..........,;::.....,.,.......,..,;:==o++.,.
+                                        .;:=;=;+;,.:,:,::=;;;,;=,,.....,.,.;:;.,...,.,.....,.,..;;;+*o=:,:
+                                            ,:;=*=:....,:::;,;:;.........,.....,...,.......,...;:=;o*+.,.,
+                                              .=;+;;....,;:;.,;=.,.,.,.,.,.,.,.,.,.,.,.....,...;==O0=,.,,
+                                         OoOoOoOoOoO.........................................,,,:*O+.,.,.
+                               OoOoOoOoOoOoOoO===+;+=+==;==+=+;==+=====+=+=+=+=+=+=+=+=+;+=+=Oo
+                      oOoOoOoOoOoOoO=+=+=+=+;=;=;=;=;=;=;=;===;==+==;==+=+=+;==+=+=+;=;=;==+=+=+=+=+=+
+                 OoOoOoOoOoOo+=+=+=++*++=+=+==;=;=;=;=;===;==+;==+=+;==+=+=+===+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+            oOoOoOoOoOoO=+=+=+=+=+=+=*=+==;=;=;=;=;=;=;=;=;=;+;=;=;+;+=+=+=+;==+=+=+;=;=;+=+=+=+++=+=+==;=;=;+=+
+        oOoOoOoOoOo*++=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+====;=;+;==+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+==;+=+;+=+=+=+
+      oOoOoOoOoO=+=+=+=+=+;=;=;=;==+=+=*=+=+;=;==+;=;=;=;=;=;=;=;+=+===+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+==;=;=;=;=;+===+=+
+   OoOoOoOoOo*=+=+=+++=+=+=+=+=+=+=+=+=++*=+=+=+=+====;+=+==;=;==+=+=+=+=+=+;+=+=+=+=+=+=+=*+*+*++=+=+=+==;======+=+=+=+=+=+
+  oOoOoOoO=+=+++;=;+=+=+=+=+=+=+=+=+=+=+=*=+==;+;=;=;=;=;=;=;=;====+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+==;=;+;=;==+===+=+=+=+=+=+=
+ OoOoOoO**=+=+=*===+=+=*=+=+=+=+=+=+=+=+=*=+=+=+=+=+;=;===;=;=;==+=+=+=+=+=+=+=+=+=+=+=++*=*+*++=+=+=+=+=+=+;+=+=+=+=+=+=+=+=*=+=++
+ OoOoO=+*O**=+=+++=+;+=+=+=+=+=+=+=+=+=+=+++==;+=+;=;=;=;=;=;=;=;+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;===;+=+;=;==+=+===+=+=+=+=+=+=+=*++o
+oOoOo*+*+**o**=+=*++=+=+=+++=+=+=+=+=+=+=+=+=+=====+=+;=;=;=;=;=;+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*+***+*o
+oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+=+=+=+=+=+=+=+=+=+=+=+==;+=+=+=+=+=+=+=+=+=+=*+*+**o**+Oo
+ OoO*O*o*o+*oo**+*+++*=+=+=+=+=+=+=+=+=+=+=+=+=+=====+;=;=;=;=;====+=+=+=+=+;+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*+*+o*o*o*ooOoO
+  oO+ooo*o*o+**o+*++=*++=+=+=+=+=+=+=+=+=+===+=+;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;==+=+=+;+=+=+=+=+=+=+=+=+=++*+*+o*o*o*O+OoOo
+   OoOoOoOoo**+**o+*+*+*+*=+=+=+=+=+=+=+=+=+=+=+=+==;=;=;=;=;=;=;======+=+=+;=;=;=;+==;=;=;=;=;==+=+=+=+=+=+=+=+=+=+=+=++*+*+****OoOoOoOoOo
+     OoOoooO*o+*+*+*++=+=+++=+;=;=;=;+=+===+;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;==*+*++++=+;=;==+=+=+=+=+=+=++++++*+ooOoOoOo*+*o
+        oOoo*O*o+*+**o+*+*++**==;=;=;+=+=+=+=+==;==+==;=;=;===;=;=;=;+=+==;=;=;=;=;=;=;+=++**OoOoo=+=+=+=+=+=+=+=+=+=+=*+*+*+o*OoOoOoOoOoOo
+          oOoo*o+*+***+*===O*o=+;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;=;==**ooOoOoO;+=+;+=+=+=+=+=+=+=+++=++*oooOoOoO*OoOoO
+            oOoOoo=*+o**++oOoo*o++*+;=;==+=+=+;==+=+=+==;==+=+=+;=;=;==+;===;=;=;=;=;=+o+ooOoOoOoO=+=+=+=+=+=+=+=+=+=*=*+**ooOoOoOoOoOoOoO
+               OoOoO+++*+OoOoOoo*o=*==;=;=;=;=;=;+=+=+=+=+==;====+==;=;=;=;+;=;=;=;==**O+ooOoOoOoO=+=+;+=+=+=+=+=+=*+*=*+OoOoOoOoOoOoOoO
+                  oOoo+*+OoOoOoOoOoo*+=+;===;=;=;+=+=+=+=====+=+=+=+=+=+==;+====;=;+=*o**ooOoOoOoO=+=+=+=+=+=+=+=++*+*+OoOoOoOoOoOoOoOo
+                     O*o+OoooOoOoOoO****++==;=;ooOo=========;=;+=+=+=+++=++o++==;=;=+o*o*Ooo*o+o+o=+=+=+=+=+=+=++**o+OoOoOoOoOoOoOoOo
+                        oOoOoOoOoOoOoO*o*o++===ooO*o++=+=+===+=+=+=+=****o*o+*=+;++*oo*OoO=o*o*o*+=+=+=+=+=+=++O*o*OoOoOoOoOoOoOoOo
+                           O*OoOoOoooo*o*o+*+*=====*++=+=+==;==+=++*+*=+=++*+*=+;**O***Oo*+*+*=*===+=+=+=+=*+**OoOoOoOoOoOoOoOoO
+                              oOoOoOoO*O*o*o+o++=+=+=+=+=+=+=+=+=+=**o=++*+*++;=*ooOoO*====+o+=+=+=+=+=+=*+*oOoOoOoOoOoOoOoOoO
+                                 OoOo;oO*o*o+o=+=+=+=+=+==;=;+=+=*=*+*+o**+*=+==*ooOoOoo+*+oo===;==+=+=+=*+*+OoOoOoOoOoOoO
+                                  +==+oOoOoo*O+*+*+*++=+==;==++*=*+*=**o**+*=++*oooOoOoOoOoOo=;=;==+==;==+=**OoOoOoOoO
+                                  *=;+oooOoo*O*OoO++==;=;=;==*+*+*+*+*+*++=++*+**OoOoOoOoOoOo=;=;==+=+:==+oOoOoOoO
+                                  **+*Oo**+**O*Ooo=+=+;=;=;=;***=*+*+*=*+*+*+*+*oOoOoOoOoOoOo=;+=+=+=+=*=ooOoO
+                                  oo*OOo+*+*=*==  =+=+;=;=;*oOoO*o+*+*=++**O+o+OoOoOoOoOoOoOo==+=++++*=oo*
+                                  OOO0Oo**+*+*+=          +OoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOo+=*=*   *=*+
+                                  o0oOoo**+*+*++                    oOoOoOoOoOoOoOoOoOO0O0O0O*;      *;*
+                                  oOo0oo****+o**                                     0000OO8OO;
+                                  oOoO*o******+*                                     O08*8O800;
+                                 8o0o0*Ooo***o**                                     008080808;
+                                 8oO*0*oo****o**                                     O08080808;+
+                                 OoOo0oOoo*o*o*                                      O08080808;*
+                                 0o0*OoOoo*o*o*                                      00808O808:+
+                                 Oo0o0o0oooO*o*                                      80808O808=*
+                                 OoooOoOoooOoo*                                      008080808**
+                                 OoOoOO0OOoOoOo                                      808080808O*
+                                 OoOoOO0oOoOoOo                                      8080808080*
+                                 OoOoOO0O0o0oOo                                      8080808080*
+                                 OoOoOo0OOoOoOo                                      8080808080*+
+                                0OoOoOO0O0O0O0O                                      8080808080*+
+                                00oOo0O8O0O0OOo                                      8080808080*+
+                                00oOo0*8O0OOO0O                                      8080808080o*
+                                00oOoO08O0OOO0O                                      8080808080o*
+                                O0oOoO08O0O0O0O                                      8080808080o*
+                                oOoOoOO8O0O0O0O                                      8080808080o*
+                                O0oOoO08O0O0O0O                                     080808080808*
+                                00oOoO08O0O0O0O                                     O80808080808*o
+                                00OOo00808O800O                                     080808080808oO
+                                OOOOoO0808O0O0O                                     O80808080808oO
+                               OO0OOoO080808080                                     O80808080808oO</pre>
+      <div class="how-works-layout" data-how-it-works>
+        <header class="how-works-intro">
+          <span class="how-works-eyebrow">The process</span>
+          <h1 id="page-how-heading">How It Works</h1>
+          <p>From your daily habits to your predicted GWA. Explore what the estimator measures and how it produces your result.</p>
+        </header>
+        <div class="how-works-list">
+          <details class="how-works-item" name="page-how-it-works">
+            <summary>
+              <h3>What goes into the prediction?</h3>
+              <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </summary>
+            <div class="how-works-content">
+                <p>The estimator uses five values from your daily routine:</p>
+                <ul>
+                  <li>Average daily screen time</li>
+                  <li>Academic phone use during study time</li>
+                  <li>Social media or entertainment phone use during study time</li>
+                  <li>Average study hours per day</li>
+                  <li>Study frequency per week</li>
+                </ul>
+            </div>
+          </details>
+          <details class="how-works-item" name="page-how-it-works">
+            <summary>
+              <h3>How is my GWA estimated?</h3>
+              <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </summary>
+            <div class="how-works-content">
+                <p>Your inputs feed a Linear Regression model that estimates your General Weighted Average (GWA) on the 1.00&ndash;5.00 scale. A lower GWA indicates better academic performance.</p>
+            </div>
+          </details>
+          <details class="how-works-item" name="page-how-it-works">
+            <summary>
+              <h3>What does my result mean?</h3>
+              <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </summary>
+            <div class="how-works-content">
+                <p>Your predicted GWA maps to one of four performance bands:</p>
+                <dl class="how-works-bands">
+                  <div><dt>Excellent</dt><dd>1.00&ndash;1.75</dd></div>
+                  <div><dt>Good</dt><dd>1.76&ndash;2.50</dd></div>
+                  <div><dt>Satisfactory</dt><dd>2.51&ndash;3.00</dd></div>
+                  <div><dt>Failing</dt><dd>3.01&ndash;5.00</dd></div>
+                </dl>
+            </div>
+          </details>
+          <details class="how-works-item" name="page-how-it-works">
+            <summary>
+              <h3>What should I know about the model?</h3>
+              <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </summary>
+            <div class="how-works-content">
+                <p>This prototype uses a Linear Regression model trained on synthetic data. It can be retrained when real survey data becomes available.</p>
+                <p>Use the result to reflect on your habits. It is an estimate, not an official grade.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/how-it-works.js?v=how-works-1"></script>
+  <script src="../js/assessment-drafts.js?v=drafts-1"></script>
+  <script src="../js/auth.js?v=drafts-2"></script>
+</body>
+</html>

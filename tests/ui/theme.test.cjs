@@ -6,7 +6,7 @@ const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '../..');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 async function setup(t, { reduced = false, storageBlocked = false, transition, savedTheme, page = 'index' } = {}) {
-  const markup = fs.readFileSync(path.join(root, 'html', page + '.html'), 'utf8');
+  const markup = fs.readFileSync(path.join(root, 'frontend/html', page + '.html'), 'utf8');
   const dom = new JSDOM(markup, { url: 'https://example.test', runScripts: 'outside-only' });
   t.after(() => dom.window.close()); await tick();
   const w = dom.window;
@@ -16,7 +16,7 @@ async function setup(t, { reduced = false, storageBlocked = false, transition, s
   const scrolls = [];
   w.scrollTo = position => scrolls.push(position);
   if (transition) w.document.startViewTransition = transition;
-  w.eval(fs.readFileSync(path.join(root, 'js/theme-toggle.js'), 'utf8'));
+  w.eval(fs.readFileSync(path.join(root, 'frontend/js/theme-toggle.js'), 'utf8'));
   w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
   const toggle = w.document.querySelector('.theme-toggle input');
   const change = () => { toggle.checked = !toggle.checked; toggle.dispatchEvent(new w.Event('change')); };

@@ -7,12 +7,12 @@ const root = path.resolve(__dirname, '../..');
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 
 function setup(t, page) {
-  const dom = new JSDOM(fs.readFileSync(path.join(root, 'html', page + '.html'), 'utf8'), {
+  const dom = new JSDOM(fs.readFileSync(path.join(root, 'frontend/html', page + '.html'), 'utf8'), {
     url: 'https://example.test/' + page + '.html', runScripts: 'outside-only', virtualConsole: new VirtualConsole()
   });
   t.after(() => dom.window.close());
   const w = dom.window;
-  w.eval(fs.readFileSync(path.join(root, 'js/how-it-works.js'), 'utf8'));
+  w.eval(fs.readFileSync(path.join(root, 'frontend/js/how-it-works.js'), 'utf8'));
   const d = w.document;
   return { w, d, items: [...d.querySelectorAll('.how-works-item')], triggers: [...d.querySelectorAll('.how-works-item summary')] };
 }

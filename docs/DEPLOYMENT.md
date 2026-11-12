@@ -7,7 +7,7 @@ without creating assessment records.
 
 ## Local setup
 
-1. Install dependencies with `setup.bat`, or run `venv\Scripts\python.exe -m pip install -r requirements.txt`.
+1. Install dependencies with `scripts/setup.bat`, or run `venv\Scripts\python.exe -m pip install -r requirements.txt`.
 2. Configure the existing `config.py` MySQL connection, or use the `MYSQL_HOST`,
    `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, and `MYSQL_PASSWORD` environment
    variables. Do not commit real credentials.
@@ -17,10 +17,10 @@ without creating assessment records.
    directory contains private student data; secure it and verify restoration.
    For a database with additional tables, views, or triggers, take a complete
    database backup using your database provider's backup tool instead.
-4. Run `venv\Scripts\python.exe -m acad_history.migrate`. The migration is
+4. Run `venv\Scripts\python.exe -m acad_perf.history.migrate`. The migration is
    repeatable. Existing records without an owner remain unassigned and hidden.
 5. Stop the separate Microsoft sign-in check if it still occupies port 5000.
-   Start `dev-server.bat`; enter the Microsoft client secret Value at the hidden
+   Start `scripts/dev-server.bat`; enter the Microsoft client secret Value at the visible
    prompt. Open `http://localhost:5000`. Restart the app when the secret changes.
 
 The app requires the Flask server. Opening the HTML directly or using a static
@@ -41,6 +41,21 @@ private environment configuration. Set:
 | `PLM_CLIENT_ID`, `PLM_TENANT_ID` | Microsoft app and PLM directory IDs; defaults match the current registration |
 | `PLM_CLIENT_SECRET` | Microsoft client secret Value; inject through a secret manager |
 | `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD` | MySQL connection; use a restricted runtime account |
+
+Sessions use the existing persistent MySQL `sessions` table and expire eight
+hours after successful sign-in. Requests never extend the authenticated deadline.
+Preserve the database and stable application configuration across deployments.
+Logout revokes this browser's session; clearing its cookies also ends access.
+Existing sessions are capped at eight hours from their original issuance. The
+custom storage interface targets Flask-Session 0.8 and prevents delayed requests
+from recreating logged-out sessions; rerun expiration and concurrent logout tests
+before upgrading it. No schema migration is required.
+
+Unfinished assessments use browser-only localStorage, separated for guests and
+accounts. They expire 24 hours after the last answer edit and are purged on the
+next access. They need no server storage or scheduled draft cleanup. Explicit
+logout deletes that account's browser draft. Browsers blocking storage can still
+complete assessments, but cannot persist drafts.
 
 Register the exact production `APP_BASE_URL/auth/callback` as a Web redirect URI
 in the same Microsoft application. Apply migrations with a separately privileged

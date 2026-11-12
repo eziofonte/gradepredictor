@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>History</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=text-white-1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css?v=drafts-2" />
+  <script src="../js/theme-toggle.js?v=circular-theme-1"></script>
+</head>
+<body class="history-body">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <nav class="topnav" aria-label="Main navigation">
+    <a class="nav-brand" href="index.html"><img class="brand-logo nav-mark" src="../assets/logo.png" alt="" width="36" height="36" /><span class="nav-brand-full">Academic Performance Predictor</span><span class="nav-brand-short" aria-hidden="true">Academic Predictor</span></a>
+    <div class="nav-links">
+      <a href="index.html#hero">Home</a>
+      <a href="index.html#how-it-works">How It Works</a>
+      <a href="/?scroll=assessment">Assessment</a>
+      <a href="history.html" class="active" aria-current="page">History</a>
+    </div>
+    <div class="nav-actions">
+      <label class="theme-toggle">
+        <input id="checkbox" type="checkbox" role="switch" aria-checked="false" aria-label="Switch to light theme" />
+        <span class="theme-toggle-face" aria-hidden="true">
+          <svg class="theme-toggle-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" focusable="false">
+            <circle cx="12" cy="12" r="4.5" />
+            <path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.2 4.2 7 7M17 17l2.8 2.8M4.2 19.8 7 17M17 7l2.8-2.8" />
+          </svg>
+          <svg class="theme-toggle-moon" viewBox="0 0 24 24" fill="currentColor" focusable="false">
+            <path d="M10.5 1a11 11 0 1 1-9.4 17A11 11 0 0 0 10.5 1Z" />
+          </svg>
+        </span>
+      </label>
+    </div>
+  </nav>
+
+  <main class="page page--history history-page" id="main-content" tabindex="-1">
+    <header class="header history-heading">
+      <div><h1 id="history-title" tabindex="-1">History</h1></div>
+    </header>
+    <p class="history-privacy text-secondary"></p>
+    <section id="history-empty" class="surface history-state history-initial-loading" role="status" aria-live="polite" aria-busy="true"><p>Loading your history…</p><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></section>
+
+    <div id="history-content" class="hidden">
+      <section id="history-filter-panel" class="surface history-filter-panel" aria-label="Filter assessments">
+        <button id="history-filter-toggle" class="btn-secondary" type="button" aria-expanded="false" aria-controls="history-filter-form" hidden>Filters</button>
+        <form id="history-filter-form" novalidate>
+          <div class="history-filter-fields">
+            <div class="field"><label class="field-label" for="year-level-filter">Year level</label><select id="year-level-filter"><option value="">All year levels</option><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></div>
+            <div class="field"><label class="field-label" for="academic-term-filter">Academic term</label><select id="academic-term-filter"><option value="">All terms</option><option value="1st Sem">1st Semester</option><option value="2nd Sem">2nd Semester</option><option>Midyear</option></select></div>
+            <div class="field"><label class="field-label" for="date-from">From date</label><input type="date" id="date-from" min="2026-09-01" aria-describedby="history-date-note history-date-error"></div>
+            <div class="field"><label class="field-label" for="date-to">To date</label><input type="date" id="date-to" min="2026-09-01" aria-describedby="history-date-note history-date-error"></div>
+          </div>
+          <p id="history-date-error" class="history-field-error" role="alert" hidden></p>
+          <div class="history-filter-actions"><div class="button-row"><button type="submit" class="btn-primary">Apply filters</button><button type="button" id="history-reset" class="btn-secondary">Reset</button></div><p id="history-date-note" class="text-secondary"></p></div>
+        </form>
+        <div class="history-applied"><p id="history-applied-filters" class="text-secondary">All assessments</p><button id="history-reset-applied" class="history-text-button" type="button" hidden>Reset filters</button></div>
+      </section>
+      <div id="history-message" class="history-message" role="status" aria-live="polite"></div>
+      <div id="history-toolbar" class="history-toolbar" hidden><strong id="history-count" tabindex="-1"></strong><span class="text-secondary">Newest first</span></div>
+      <section id="history-records" aria-label="Saved assessments" aria-busy="false">
+        <div id="history-loading" class="surface history-loading" hidden><p>Loading your history?</p><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
+        <div id="history-state" class="surface history-state" role="status" hidden></div>
+        <div id="history-table" class="history-record-table" hidden><table class="data-table"><caption class="sr-only">Saved assessment estimates, newest first. Dates and times use Philippine time.</caption><thead><tr><th scope="col">Date</th><th scope="col">Academic details</th><th scope="col">Predicted GWA</th><th scope="col">Category</th><th scope="col">Action</th></tr></thead><tbody id="history-table-body"></tbody></table></div>
+        <div id="history-cards" class="history-cards" hidden></div>
+      </section>
+      <nav id="history-pagination" class="history-pagination" aria-label="History pages" hidden>
+        <ul class="history-pagination-content">
+          <li>
+            <button type="button" id="history-prev" class="btn-secondary history-page-button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6" /></svg>
+              Previous
+            </button>
+          </li>
+          <li class="history-page-count"><span id="history-page"></span></li>
+          <li>
+            <button type="button" id="history-next" class="btn-secondary history-page-button">
+              Next
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+          </li>
+        </ul>
+      </nav>
+      <section id="history-manage" class="history-manage" aria-labelledby="history-manage-title" hidden><h2 id="history-manage-title">Manage history</h2><button type="button" id="clear-btn" class="history-text-button history-delete">Clear all history</button><p class="text-secondary">This deletes all your assessments, including records outside the current filters.</p><p class="history-retention text-secondary">Deleted assessments may remain in backups for up to 30 days.</p></section>
+    </div>
+  </main>
+  <dialog id="history-detail" class="history-detail" aria-labelledby="history-detail-title" aria-describedby="history-detail-date history-detail-reminder">
+    <div class="history-detail-heading"><h2 id="history-detail-title">Assessment details</h2><button type="button" id="history-detail-close" class="btn-secondary" autofocus>Close</button></div>
+    <p id="history-detail-date" class="text-secondary"></p>
+    <div id="history-detail-result" class="history-detail-result"></div>
+    <dl id="history-detail-fields" class="history-detail-fields"></dl>
+    <p id="history-detail-reminder" class="text-secondary">This is a saved estimate, not an official grade.</p>
+    <div class="history-detail-actions"><button type="button" id="history-detail-delete" class="history-text-button history-delete">Delete assessment</button><button type="button" id="history-detail-done" class="btn-secondary">Close</button></div>
+  </dialog>
+  <dialog id="history-confirm" class="history-detail history-confirm" aria-labelledby="history-confirm-title" aria-describedby="history-confirm-description history-confirm-retention">
+    <h2 id="history-confirm-title"></h2>
+    <p id="history-confirm-description"></p>
+    <p id="history-confirm-retention" class="text-secondary">Deleted assessments may remain in backups for up to 30 days.</p>
+    <p id="history-confirm-error" class="status status--error" role="alert" hidden></p>
+    <div class="history-confirm-actions"><button id="history-confirm-cancel" type="button" class="btn-secondary" autofocus>Cancel</button><button id="history-confirm-delete" type="button" class="btn-destructive"></button></div>
+  </dialog>
+
+  <script src="../js/assessment-drafts.js?v=drafts-1"></script>
+  <script src="../js/auth.js?v=drafts-2"></script>
+  <script src="../js/history-calendar.js?v=history-date-bounds-1"></script>
+  <script src="../js/history.js?v=drafts-2"></script>
+</body>
+</html>
