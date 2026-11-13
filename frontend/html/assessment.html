@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Assessment</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=text-white-1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css?v=controls-14px-1" />
+  <script src="../js/theme-toggle.js?v=circular-theme-1"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <nav class="topnav" aria-label="Main navigation">
+    <a class="nav-brand" href="index.html"><img class="brand-logo nav-mark" src="../assets/logo.png" alt="" width="36" height="36" /><span class="nav-brand-full">Academic Performance Predictor</span><span class="nav-brand-short" aria-hidden="true">Academic Predictor</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="hiw.html">How It Works</a>
+      <a href="assessment.html" class="active" aria-current="page">Assessment</a>
+
+      <a href="history.html">History</a>
+
+    </div>
+    <div class="nav-actions">
+      <label class="theme-toggle">
+        <input id="checkbox" type="checkbox" role="switch" aria-checked="false" aria-label="Switch to light theme" />
+        <span class="theme-toggle-face" aria-hidden="true">
+          <svg class="theme-toggle-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" focusable="false">
+            <circle cx="12" cy="12" r="4.5" />
+            <path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.2 4.2 7 7M17 17l2.8 2.8M4.2 19.8 7 17M17 7l2.8-2.8" />
+          </svg>
+          <svg class="theme-toggle-moon" viewBox="0 0 24 24" fill="currentColor" focusable="false">
+            <path d="M10.5 1a11 11 0 1 1-9.4 17A11 11 0 0 0 10.5 1Z" />
+          </svg>
+        </span>
+      </label>
+    </div>
+  </nav>
+
+  <main class="page" id="main-content" tabindex="-1">
+    <header class="header">
+      <div class="eyebrow">Try It Now</div>
+      <h1>Get Your <span class="accent-text">Prediction</span></h1>
+      <p class="subtitle">
+        Enter your cellphone usage and study habits below to estimate your GWA
+        and performance category.
+      </p>
+    </header>
+
+    <div class="panel">
+      <form id="estimator-form" class="form-panel">
+          <p class="account-assessment-note text-secondary" data-guest-account-note hidden>Use your PLM school account to save your assessments. Only future signed-in submissions are saved.</p>
+        <section class="section">
+          <div class="section-head"><span class="section-number">1</span><h2>Student</h2></div>
+          <div class="rule"></div>
+          <div class="field-row cols-2">
+            <div class="field">
+              <label class="field-label" for="yearLevel">Year level</label>
+              <div class="field-hint"></div>
+              <div class="input-shell select-shell">
+                <select id="yearLevel">
+                  <option value="">Select year level</option>
+                  <option>1st Year</option><option>2nd Year</option>
+                  <option>3rd Year</option><option>4th Year</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="academicTerm">Academic Term</label>
+              <div class="field-hint"></div>
+              <div class="input-shell select-shell">
+                <select id="academicTerm" required>
+                  <option value="">Select term</option>
+                  <option>1st Sem</option>
+                  <option>2nd Sem</option>
+                  <option>Midyear</option>
+                </select>
+              </div>
+              <span class="field-error" id="academicTerm-error" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label" for="program">Program / Course</label>
+              <div class="field-hint"></div>
+              <div class="input-shell select-shell">
+                <select id="program">
+                  <option value="">Select program</option>
+                  <option>BSIT</option>
+                  <option>BSCS</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><span class="section-number">2</span><h2>Cellphone Usage</h2></div>
+          <p class="section-intro">Tell us how you typically use your phone during the day and while studying.</p>
+          <div class="rule"></div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label" for="screenTime">Average daily screen time</label>
+              <div class="field-hint"></div>
+              <div class="input-shell">
+                <input type="number" id="screenTime" min="0" max="24" step="0.5" required />
+                <span class="unit-tag">hrs / day</span>
+                <div class="steppers">
+                  <button type="button" aria-label="Increase screen time" data-dir="1">&#9650;</button>
+                  <button type="button" aria-label="Decrease screen time" data-dir="-1">&#9660;</button>
+                </div>
+              </div>
+              <span class="field-error" id="screenTime-error" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="field-row cols-2 phone-use-row">
+            <div class="field">
+              <label class="field-label" for="academicPhoneUse">Academic phone use during study time</label>
+              <div class="field-hint">e.g. looking up school materials, checking the LMS</div>
+              <div class="input-shell">
+                <input type="number" id="academicPhoneUse" min="0" max="24" step="0.5" required />
+                <span class="unit-tag">hrs / day</span>
+                <div class="steppers">
+                  <button type="button" aria-label="Increase academic phone use" data-dir="1">&#9650;</button>
+                  <button type="button" aria-label="Decrease academic phone use" data-dir="-1">&#9660;</button>
+                </div>
+              </div>
+              <span class="field-error" id="academicPhoneUse-error" aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label class="field-label" for="socialPhoneUse">Social media / entertainment phone use during study time</label>
+              <div class="field-hint">e.g. social media, games, videos while supposed to be studying</div>
+              <div class="input-shell">
+                <input type="number" id="socialPhoneUse" min="0" max="24" step="0.5" required />
+                <span class="unit-tag">hrs / day</span>
+                <div class="steppers">
+                  <button type="button" aria-label="Increase social phone use" data-dir="1">&#9650;</button>
+                  <button type="button" aria-label="Decrease social phone use" data-dir="-1">&#9660;</button>
+                </div>
+              </div>
+              <span class="field-error" id="socialPhoneUse-error" aria-live="polite"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><span class="section-number">3</span><h2>Study Habits</h2></div>
+          <p class="section-intro">Describe the amount and regularity of your independent study.</p>
+          <div class="rule"></div>
+          <div class="field-row cols-2">
+            <div class="field">
+              <label class="field-label" for="studyHours">Average study hours per day</label>
+              <div class="field-hint"></div>
+              <div class="input-shell">
+                <input type="number" id="studyHours" min="0" max="24" step="0.5" required />
+                <span class="unit-tag">hrs / day</span>
+                <div class="steppers">
+                  <button type="button" aria-label="Increase study hours" data-dir="1">&#9650;</button>
+                  <button type="button" aria-label="Decrease study hours" data-dir="-1">&#9660;</button>
+                </div>
+              </div>
+              <span class="field-error" id="studyHours-error" aria-live="polite"></span>
+            </div>
+            <div class="field">
+              <label class="field-label" for="studyDays">Study frequency per week</label>
+              <div class="field-hint"></div>
+              <div class="input-shell">
+                <input type="number" id="studyDays" min="0" max="7" step="1" required />
+                <span class="unit-tag">days / week</span>
+                <div class="steppers">
+                  <button type="button" aria-label="Increase study frequency" data-dir="1">&#9650;</button>
+                  <button type="button" aria-label="Decrease study frequency" data-dir="-1">&#9660;</button>
+                </div>
+              </div>
+              <span class="field-error" id="studyDays-error" aria-live="polite"></span>
+            </div>
+          </div>
+        </section>
+
+        <p id="assessment-message" class="status status--error" role="alert" hidden></p>
+        <div class="button-row">
+          <button type="submit" id="submit-btn" class="estimate-btn">Predict performance</button>
+          <button type="button" id="reset-btn">Reset</button>
+        </div>
+      </form>
+
+      <div class="result-panel" id="result-panel" role="region" aria-labelledby="result-heading">
+        <h2 id="result-heading">Prediction</h2>
+        <div class="result-body">
+          <div id="result-empty"><p class="empty-invite">Fill in the form to see your predicted GWA.</p></div>
+          <div id="result-filled" class="hidden">
+            <div class="result-label">Predicted GWA</div>
+            <div id="result-gwa" class="result-gwa" role="status" aria-live="polite"></div>
+          </div>
+          <div class="gwa-scale-visual result-scale-preview">
+            <div class="gwa-scale-label">GWA scale</div>
+            <div class="gwa-scale-bar-wrap">
+              <div id="gwa-marker" class="gwa-marker"><div class="gwa-marker-tag" id="gwa-marker-tag"></div><div class="gwa-marker-arrow"></div></div>
+              <div class="gwa-scale-bar" id="gwa-scale-bar">
+                <div class="gwa-band excellent" title="Excellent: 1.00-1.75"></div>
+                <div class="gwa-band good" title="Good: 1.76-2.50"></div>
+                <div class="gwa-band satisfactory" title="Satisfactory: 2.51-3.00"></div>
+                <div class="gwa-band failing" title="Failing: 3.01-5.00"></div>
+              </div>
+            </div>
+            <div class="gwa-scale-labels"><span class="label">1.00</span><span class="label">1.75</span><span class="label">2.50</span><span class="label">3.00</span><span class="label">5.00</span></div>
+          </div>
+          <ul id="result-suggestions" class="hidden" aria-label="Study suggestions" style="color: var(--dark-ink); text-align: left;"></ul>
+          <div id="result-note-wrap" class="hidden"><div class="rule"></div><p class="result-note">This is a prototype estimate, not an official grade. <a href="hiw.html">How the prediction works</a></p></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/assessment-drafts.js?v=drafts-1"></script>
+  <script src="../js/auth.js?v=drafts-2"></script>
+  <script src="../js/assessment.js?v=drafts-1"></script>
+  <script src="../js/custom-select.js?v=select-focus-2"></script>
+</body>
+</html>

@@ -1,6 +1,8 @@
 # Byte-compiled / cache
 __pycache__/
 *.pyc
+.pytest_cache/
+
 
 # Editor/OS junk
 .DS_Store
@@ -15,3 +17,9 @@ config.py
 *.phase3-backup
 academic-performance-webapp-BACKUP-*/
 academic-performance-webapp-BACKUP-*.tar.gz
+
+venv/
+tests/
+backups
+output/
+tools/
