@@ -15,7 +15,7 @@ const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)'
 const later = (action, delay) => resultTimers.push(setTimeout(action, delay));
 function clearResultTimers() { resultTimers.forEach(clearTimeout); resultTimers = []; }
 
-const requiredIds = ['academicTerm', 'screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays'];
+const requiredIds = ['yearLevel', 'academicTerm', 'program', 'screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays'];
 
 requiredIds.forEach(id => {
   const input = document.getElementById(id);
@@ -353,6 +353,12 @@ function showResult(result) {
   resultSuggestions.classList.toggle('hidden', resultSuggestions.children.length === 0);
 
   renderSlidingNumber(resultGwa, result.predicted_gwa);
+  const difficultyNote = document.getElementById('difficulty-result');
+  if (difficultyNote) {
+    difficultyNote.hidden = result.semester_difficulty == null;
+    difficultyNote.textContent = difficultyNote.hidden ? '' :
+      `Average subject difficulty: ${result.semester_difficulty.toFixed(2)} / 5 for ${document.getElementById('yearLevel').value}, ${document.getElementById('academicTerm').value}.`;
+  }
 
   const scaleVisual = document.querySelector('.gwa-scale-visual');
   const bar = document.getElementById('gwa-scale-bar');
@@ -474,11 +480,11 @@ form.addEventListener('submit', async (e) => {
     notice.replaceChildren();
     if (result.saved) {
       pendingSubmission = null;
-      notice.textContent = 'Saved to your history.';
+      notice.textContent = '';
     } else if (auth.authenticated) {
       notice.textContent = result.save_error || 'Your result could not be saved.';
     } else {
-      notice.append('Guest result — not saved. Use your PLM school account to save future assessments. ');
+      notice.append('Use your PLM school account to save future assessments. ');
       notice.appendChild(window.createMicrosoftSignIn(location.pathname.replace(/^\/html\//, '/') === '/assessment.html' ? '/assessment.html' : '/#assessment'));
     }
     if (result.saved || !auth.authenticated) assessmentDraft.complete(submittedRevision, submittedValues);

@@ -7,7 +7,7 @@
   const detail = el('history-detail'), confirmation = el('history-confirm');
   const filters = { year_level: el('year-level-filter'), academic_term: el('academic-term-filter'), date_from: el('date-from'), date_to: el('date-to') };
   const phone = window.matchMedia('(max-width: 767px)');
-  const limit = 25;
+  const limit = 10;
   let requestId = 0, controller, snapshot, pendingQuery = { filters: {}, offset: 0 };
   let loading = false, deleting = false, filtersOpen = false, detailRecord, detailTrigger, pendingDelete;
   const termNames = { '1st Sem': '1st Semester', '2nd Sem': '2nd Semester', Midyear: 'Midyear' };
@@ -165,7 +165,7 @@
       if (currentRequest !== requestId || window.authInvalidated) return;
       if (!auth.authenticated) {
         const guestLink = node('a', 'Take an assessment as a guest'); guestLink.href = '/?scroll=assessment';
-        globalState('Your history, wherever you sign in', 'Use your PLM school account to save your assessments. Saving begins with your next signed-in submission.', window.createMicrosoftSignIn('/history.html'));
+        globalState('Nothing to see here', 'Use your PLM school account to save your assessments.', window.createMicrosoftSignIn('/history.html'));
         emptyEl.append(guestLink); return;
       }
       emptyEl.hidden = true; emptyEl.removeAttribute('aria-busy'); content.classList.remove('hidden');
@@ -216,12 +216,14 @@
   function openDetails(record, trigger, focusDelete = false) {
     detailRecord = record; detailTrigger = trigger;
     const [date, time] = dates(record);
-    el('history-detail-date').textContent = `${date} · ${time} · Philippine time`;
+    el('history-detail-date').textContent = `${date} · ${time}`;
     el('history-detail-result').replaceChildren(node('div', 'Predicted GWA', 'text-secondary'), node('strong', gwa(record), 'history-gwa'), category(record));
     const fields = el('history-detail-fields'); fields.replaceChildren();
     const unit = (value, suffix) => value === null || value === undefined || value === '' ? '—' : `${value} ${suffix}`;
-    for (const [label, value] of [['Program', text(record.program)], ['Year level', text(record.year_level)], ['Academic term', term(record.academic_term)], ['Screen time', unit(record.daily_screen_time_hrs, 'hrs / day')], ['Academic app usage', unit(record.academic_app_usage_hrs, 'hrs / day')], ['Social media usage', unit(record.social_media_hrs, 'hrs / day')], ['Study hours', unit(record.study_hours_per_day, 'hrs / day')], ['Study frequency', unit(record.study_frequency_per_week, 'days / week')]]) {
-      const group = node('div'); group.append(node('dt', label), node('dd', value)); fields.append(group);
+    const academic = node('dl'), habits = node('dl');
+    fields.append(node('h3', 'Academic details'), academic, node('h3', 'Daily habits'), habits);
+    for (const [index, [label, value]] of [['Program', text(record.program)], ['Year level', text(record.year_level)], ['Academic term', term(record.academic_term)], ['Screen time', unit(record.daily_screen_time_hrs, 'hrs / day')], ['Academic app usage', unit(record.academic_app_usage_hrs, 'hrs / day')], ['Social media usage', unit(record.social_media_hrs, 'hrs / day')], ['Study hours', unit(record.study_hours_per_day, 'hrs / day')], ['Study frequency', unit(record.study_frequency_per_week, 'days / week')]].entries()) {
+      const group = node('div'); group.append(node('dt', label), node('dd', value)); (index < 3 ? academic : habits).append(group);
     }
     detail.showModal();
     if (focusDelete) el('history-detail-delete').focus();
@@ -234,7 +236,7 @@
     el('history-confirm-title').textContent = id === null ? 'Clear all your history?' : 'Delete this assessment?';
     el('history-confirm-description').textContent = id === null
       ? 'This deletes all your assessments, including records outside the current filters.'
-      : `Assessment from ${dates(record).join(', ')} (Philippine time), predicted GWA ${gwa(record)}.`;
+      : `Assessment from ${dates(record).join(', ')}, predicted GWA ${gwa(record)}.`;
     el('history-confirm-delete').textContent = id === null ? 'Delete all assessments' : 'Delete assessment';
     el('history-confirm-error').hidden = true;
     el('history-confirm-error').textContent = '';
@@ -290,7 +292,7 @@
     const outsideRange = dates.find(field => !field.checkValidity());
     if (outsideRange) {
       el('history-date-error').hidden = false;
-      el('history-date-error').textContent = 'Choose dates from September 1, 2026 through today (Philippine time).';
+      el('history-date-error').textContent = 'Choose dates from September 1, 2026 through today.';
       outsideRange.setAttribute('aria-invalid', 'true');
       outsideRange.focus();
       return;
@@ -309,7 +311,6 @@
   next.addEventListener('click', () => { if (snapshot && !loading) loadHistory({ filters: snapshot.query.filters, offset: snapshot.query.offset + limit }); });
   el('clear-btn').addEventListener('click', () => promptDelete(null));
   el('history-detail-close').addEventListener('click', closeDetail);
-  el('history-detail-done').addEventListener('click', closeDetail);
   el('history-detail-delete').addEventListener('click', () => promptDelete(detailRecord.id));
   el('history-confirm-cancel').addEventListener('click', cancelDelete);
   el('history-confirm-delete').addEventListener('click', removeHistory);

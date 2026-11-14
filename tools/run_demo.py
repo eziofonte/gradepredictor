@@ -16,7 +16,6 @@ def main():
     print("Register this exact Web redirect URI in Microsoft Entra:")
     print(address + "/auth/callback")
     print("Keep the tunnel window and this window open during the demo.")
-    print("The next input is visible on screen. Keep this window private.")
     secret = input("Microsoft client secret Value (visible): ").strip()
     if not secret:
         sys.exit("The client secret is required for sign-in.")

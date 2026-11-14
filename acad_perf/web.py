@@ -1,26 +1,21 @@
 from pathlib import Path
+import json
+import joblib
 from flask import Flask, request, jsonify, send_from_directory, session
 from acad_perf.history.database import connect
 from acad_perf.history.account_history import setup as setup_accounts, save_prediction
 from mysql.connector import Error
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
 
-from acad_perf.predictor import (
-    generate_synthetic_data,
-    FEATURE_COLUMNS,
-    TARGET_SCORE,
-    TARGET_CLASS,
-    RANDOM_SEED,
-    gwa_to_category,
-)
+from acad_perf.predictor import gwa_to_category
 
 
 HIGH_SOCIAL_MEDIA_HOURS = 2
 HIGH_ACADEMIC_APP_HOURS = 4
 MAX_SUGGESTIONS = 4
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / 'frontend'
+MODEL_DIR = Path(__file__).resolve().parent.parent / 'models'
 
 
 def get_suggestions(category, inputs):
@@ -54,48 +49,14 @@ def create_app(overrides=None):
             app.logger.warning('MySQL connection unavailable')
             return None
 
-    def train_models():
-        """Train the regression model once on synthetic
-        data when the app starts (matches the desktop app's behavior:
-        no saved model files, fresh training each run)."""
-        df = generate_synthetic_data(n=400)
-        X = df[FEATURE_COLUMNS]
-
-        reg_model = LinearRegression()
-        reg_model.fit(X, df[TARGET_SCORE])
-
-        return reg_model
-
-    def predict_new_student(reg_model, student_dict):
-        """Given a dict of feature values for one student, return the GWA,
-        the GWA-derived category (source of truth). Matches
-        acad_perf/desktop.py's on_predict() logic exactly."""
-        # NOTE: studyDuringPhone currently maps to BOTH academic_app_usage_hrs
-        # and social_media_hrs below - this is a known limitation until
-        # assessment.html has separate fields for each. See open TODO.
-        features = {
-            'daily_screen_time_hrs': float(student_dict.get('screenTime', 0)),
-            'academic_app_usage_hrs': float(student_dict.get('academicPhoneUse', 0)),
-            'social_media_hrs': float(student_dict.get('socialPhoneUse', 0)),
-            'study_hours_per_day': float(student_dict.get('studyHours', 0)),
-            'study_frequency_per_week': float(student_dict.get('studyDays', 0))
-        }
-
-        X_new = pd.DataFrame([features])[FEATURE_COLUMNS]
-        gwa = float(np.clip(reg_model.predict(X_new)[0], 1.00, 5.00))
-        gwa = round(gwa, 2)
-
-        category = gwa_to_category(gwa)  # source of truth, always derived from GWA
-
-        return gwa, category
-
-    # Initialize models
     try:
-        reg_model = train_models()
-        print("Models initialized successfully")
+        reg_model = joblib.load(MODEL_DIR / 'short_form_gwa_model.joblib')
+        difficulty_model = joblib.load(MODEL_DIR / 'third_year_difficulty_model.joblib')
+        semester_difficulties = json.loads((MODEL_DIR / 'third_year_difficulty_model.difficulty.json').read_text(encoding='utf-8'))
     except Exception as e:
-        print(f"Failed to initialize models: {e}")
-        reg_model = None
+        app.logger.exception('Unable to load trained survey models: %s', e)
+        reg_model = difficulty_model = None
+        semester_difficulties = {}
 
     # Serve frontend
     @app.route('/')
@@ -137,7 +98,7 @@ def create_app(overrides=None):
         return jsonify({
             'status': 'healthy',
             'database': db_status,
-            'models_loaded': reg_model is not None
+            'models_loaded': reg_model is not None and difficulty_model is not None
         })
 
     @app.route('/predict', methods=['POST'])
@@ -169,7 +130,11 @@ def create_app(overrides=None):
         if data.get('academicTerm') not in ('1st Sem', '2nd Sem', 'Midyear'):
             return jsonify({'error': 'Academic term must be 1st Sem, 2nd Sem, or Midyear'}), 400
         if reg_model is None:
-            return jsonify({"error": "Models not available"}), 500
+            return jsonify({"error": "Trained survey model is unavailable"}), 503
+        year = {'2nd Year': '2', '3rd Year': '3', '4th Year': '4'}.get(data.get('yearLevel'))
+        program = data.get('program')
+        if year is None or program not in ('BSIT', 'BSCS'):
+            return jsonify({'error': 'Choose a supported year (2nd to 4th) and BSIT or BSCS.'}), 400
 
         try:
             screenTime = float(data['screenTime'])
@@ -195,7 +160,6 @@ def create_app(overrides=None):
                 'error': f'Invalid value format: {str(e)}'
             }), 400
 
-        # Make prediction using the real predictor
         student_data = {
             'screenTime': screenTime,
             'academicPhoneUse': academicPhoneUse,
@@ -204,16 +168,34 @@ def create_app(overrides=None):
             'studyDays': studyDays
         }
 
-        predicted_gwa, performance_category = predict_new_student(reg_model, student_data)
+        semester_difficulty = None
+        if year == '3':
+            term = data['academicTerm']
+            if term not in ('1st Sem', '2nd Sem'):
+                return jsonify({'error': 'Third-year estimates require the first or second semester.'}), 400
+            semester_difficulty = semester_difficulties.get(program, {}).get(term)
+            if difficulty_model is None or semester_difficulty is None:
+                return jsonify({'error': 'Third-year survey model is unavailable.'}), 503
+            features = pd.DataFrame([{'screen': screenTime, 'program': program,
+                                      'term': term, 'difficulty': semester_difficulty}])
+            raw_gwa = float(difficulty_model.predict(features)[0])
+            model_note = ('Estimates a completed third-year semester using reported screen time and the survey average subject difficulty for the selected program and semester. This retrospective estimate is exploratory.')
+        else:
+            features = pd.DataFrame([{'screen_hours': screenTime, 'program': program, 'year_level': year}])
+            raw_gwa = float(reg_model.predict(features)[0])
+            model_note = 'Uses the trained survey model with screen time, program, and year. Other survey answers provide study suggestions but do not change GWA.'
+        predicted_gwa = round(float(np.clip(raw_gwa, 1.0, 5.0)), 2)
+        performance_category = gwa_to_category(predicted_gwa)
 
         result = {
             'assessment_id': None, 'saved': False, 'save_error': None,
             'predicted_gwa': predicted_gwa,
             'performance_category': performance_category,
             'suggestions': get_suggestions(performance_category, student_data),
+            'semester_difficulty': semester_difficulty,
             'model_info': {
-                'regression_model': 'Linear Regression',
-                'note': 'performance_category is always derived from predicted_gwa via gwa_to_category()'
+                'regression_model': 'Ridge regression trained on collected survey data',
+                'note': model_note
             }
         }
         if session.get('user_id'):

@@ -1,28 +1,25 @@
-# Byte-compiled / cache
+# Python and virtual environments
 __pycache__/
 *.pyc
 .pytest_cache/
-node_modules/
 venv/
 .venv/
-backups/
+
+# Local settings and generated files
 .env
-*.log
-
-# Editor/OS junk
-.DS_Store
-.vscode/*
-!.vscode/settings.json
-
-# Local config with real DB credentials
 config.py
-
-# Backup/scratch files from iteration — not part of the real project
+*.log
+output/
+backups/
 *.bak
 *.backup
 *.backup2
 *.phase3-backup
 academic-performance-webapp-BACKUP-*/
 academic-performance-webapp-BACKUP-*.tar.gz
-.vscode/ 
- 
+
+# Editor and OS files
+.DS_Store
+.vscode/*
+!.vscode/settings.json
+node_modules/

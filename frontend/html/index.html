@@ -26,7 +26,7 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <nav class="topnav" aria-label="Main navigation">
-    <a class="nav-brand" href="index.html"><img class="brand-logo nav-mark" src="../assets/logo.png" alt="" width="36" height="36" /><span class="nav-brand-full">Academic Performance Predictor</span><span class="nav-brand-short" aria-hidden="true">Academic Predictor</span></a>
+    <a class="nav-brand" href="index.html#hero"><img class="brand-logo nav-mark" src="../assets/logo.png" alt="" width="36" height="36" /><span class="nav-brand-full">Academic Performance Predictor</span><span class="nav-brand-short" aria-hidden="true">Academic Predictor</span></a>
     <div class="nav-links">
       <a href="#hero" class="active" aria-current="location">Home</a>
       <a href="#how-it-works">How It Works</a>
@@ -300,7 +300,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
             <div class="section-head"><span class="section-number">1</span><h2>Student</h2></div>
             <div class="rule"></div>
             <div class="field-row cols-2">
-              <div class="field"><label class="field-label" for="yearLevel">Year level</label><div class="field-hint"></div><div class="input-shell select-shell"><select id="yearLevel"><option value="">Select year level</option><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></div></div>
+              <div class="field"><label class="field-label" for="yearLevel">Year level</label><div class="field-hint"></div><div class="input-shell select-shell"><select id="yearLevel" required><option value="">Select year level</option><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></div></div>
               <div class="field">
                 <label class="field-label" for="academicTerm">Academic Term</label>
                 <div class="field-hint"></div>
@@ -316,7 +316,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               </div>
             </div>
             <div class="field-row">
-              <div class="field"><label class="field-label" for="program">Program / Course</label><div class="field-hint"></div><div class="input-shell select-shell"><select id="program"><option value="">Select program</option><option>BSIT</option><option>BSCS</option></select></div></div>
+              <div class="field"><label class="field-label" for="program">Program / Course</label><div class="field-hint"></div><div class="input-shell select-shell"><select id="program" required><option value="">Select program</option><option>BSIT</option><option>BSCS</option></select></div></div>
             </div>
           </section>
 
@@ -355,6 +355,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
             <div id="result-filled" class="hidden">
               <div class="result-label">Predicted GWA</div>
               <div id="result-gwa" class="result-gwa" role="status" aria-live="polite"></div>
+              <p id="difficulty-result" class="result-note" hidden></p>
             </div>
             <div class="gwa-scale-visual result-scale-preview">
               <div class="gwa-scale-label">GWA scale</div>
@@ -380,7 +381,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
   <script src="../js/how-it-works.js?v=how-works-1"></script>
   <script src="../js/assessment-drafts.js?v=drafts-1"></script>
   <script src="../js/auth.js?v=drafts-2"></script>
-  <script src="../js/assessment.js?v=drafts-1"></script>
+  <script src="../js/assessment.js?v=trained-model-1"></script>
   <script src="../js/custom-select.js?v=select-focus-2"></script>
   <script src="../js/homepage-navigation.js?v=guest-arrival-1"></script>
   <footer class="footer-section">

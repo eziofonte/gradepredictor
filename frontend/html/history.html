@@ -62,7 +62,7 @@
       <section id="history-records" aria-label="Saved assessments" aria-busy="false">
         <div id="history-loading" class="surface history-loading" hidden><p>Loading your history?</p><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span><span class="skeleton" aria-hidden="true"></span></div>
         <div id="history-state" class="surface history-state" role="status" hidden></div>
-        <div id="history-table" class="history-record-table" hidden><table class="data-table"><caption class="sr-only">Saved assessment estimates, newest first. Dates and times use Philippine time.</caption><thead><tr><th scope="col">Date</th><th scope="col">Academic details</th><th scope="col">Predicted GWA</th><th scope="col">Category</th><th scope="col">Action</th></tr></thead><tbody id="history-table-body"></tbody></table></div>
+        <div id="history-table" class="history-record-table" hidden><table class="data-table"><caption class="sr-only">Saved assessment estimates, newest first.</caption><thead><tr><th scope="col">Date</th><th scope="col">Academic details</th><th scope="col">Predicted GWA</th><th scope="col">Category</th><th scope="col">Action</th></tr></thead><tbody id="history-table-body"></tbody></table></div>
         <div id="history-cards" class="history-cards" hidden></div>
       </section>
       <nav id="history-pagination" class="history-pagination" aria-label="History pages" hidden>
@@ -82,16 +82,15 @@
           </li>
         </ul>
       </nav>
-      <section id="history-manage" class="history-manage" aria-labelledby="history-manage-title" hidden><h2 id="history-manage-title">Manage history</h2><button type="button" id="clear-btn" class="history-text-button history-delete">Clear all history</button><p class="text-secondary">This deletes all your assessments, including records outside the current filters.</p><p class="history-retention text-secondary">Deleted assessments may remain in backups for up to 30 days.</p></section>
+      <section id="history-manage" class="history-manage" aria-labelledby="history-manage-title" hidden><h2 id="history-manage-title"></h2><button type="button" id="clear-btn" class="history-text-button history-delete">Clear all history</button><p class="text-secondary"></p><p class="history-retention text-secondary"></p></section>
     </div>
   </main>
   <dialog id="history-detail" class="history-detail" aria-labelledby="history-detail-title" aria-describedby="history-detail-date history-detail-reminder">
-    <div class="history-detail-heading"><h2 id="history-detail-title">Assessment details</h2><button type="button" id="history-detail-close" class="btn-secondary" autofocus>Close</button></div>
-    <p id="history-detail-date" class="text-secondary"></p>
+    <div class="history-detail-heading"><div><h2 id="history-detail-title">Assessment details</h2><p id="history-detail-date" class="text-secondary"></p></div><button type="button" id="history-detail-close" class="history-detail-close" aria-label="Close assessment details" autofocus>&times;</button></div>
     <div id="history-detail-result" class="history-detail-result"></div>
-    <dl id="history-detail-fields" class="history-detail-fields"></dl>
-    <p id="history-detail-reminder" class="text-secondary">This is a saved estimate, not an official grade.</p>
-    <div class="history-detail-actions"><button type="button" id="history-detail-delete" class="history-text-button history-delete">Delete assessment</button><button type="button" id="history-detail-done" class="btn-secondary">Close</button></div>
+    <div id="history-detail-fields" class="history-detail-fields"></div>
+    <p id="history-detail-reminder" class="text-secondary"></p>
+    <div class="history-detail-actions"><button type="button" id="history-detail-delete" class="history-text-button history-delete">Delete assessment</button></div>
   </dialog>
   <dialog id="history-confirm" class="history-detail history-confirm" aria-labelledby="history-confirm-title" aria-describedby="history-confirm-description history-confirm-retention">
     <h2 id="history-confirm-title"></h2>

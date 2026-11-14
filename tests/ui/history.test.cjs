@@ -42,12 +42,32 @@ test('the initial loading panel disappears once records are loaded', async t => 
   assert.equal(d.querySelector('#history-table').hidden, false);
 });
 
+test('23 records are shown in pages of 10 with next and previous navigation', async t => {
+  const records = Array.from({ length: 23 }, (_, index) => record(index + 1));
+  const { d } = setup(t, { fetch: async url => {
+    const params = new URL(url, 'https://example.test').searchParams;
+    const limit = Number(params.get('limit')), offset = Number(params.get('offset'));
+    return { ok: true, status: 200, json: async () => ({ results: records.slice(offset, offset + limit), pagination: { total: records.length, has_more: offset + limit < records.length } }) };
+  }});
+  await tick();
+  assert.equal(d.querySelectorAll('#history-table-body tr').length, 10);
+  assert.equal(d.querySelector('#history-prev').disabled, true);
+  d.querySelector('#history-next').click(); await tick();
+  assert.equal(d.querySelectorAll('#history-table-body tr').length, 10);
+  assert.equal(d.querySelector('[data-record-id]').dataset.recordId, '11');
+  d.querySelector('#history-next').click(); await tick();
+  assert.equal(d.querySelectorAll('#history-table-body tr').length, 3);
+  assert.equal(d.querySelector('#history-next').disabled, true);
+  d.querySelector('#history-prev').click(); await tick();
+  assert.equal(d.querySelector('[data-record-id]').dataset.recordId, '11');
+});
+
 test('filter edits stay drafts; Apply resets pagination and uses API term values', async t => {
   const calls = [];
   const { w, d, submit } = setup(t, { fetch: async url => { calls.push(new URL(url, 'https://example.test')); return reply([record()], 30); } });
   await tick();
   d.querySelector('#history-next').click(); await tick();
-  assert.equal(calls.at(-1).searchParams.get('offset'), '25');
+  assert.equal(calls.at(-1).searchParams.get('offset'), '10');
   d.querySelector('#academic-term-filter').value = '1st Sem';
   d.querySelector('#academic-term-filter').dispatchEvent(new w.Event('change'));
   assert.equal(calls.length, 2);
@@ -126,7 +146,7 @@ test('View details retains every original input, including zero and missing valu
   await tick();
   const action = d.querySelector('[data-record-id]'); action.click();
   assert.equal(d.querySelector('dialog').open, true);
-  const values = [...d.querySelectorAll('#history-detail-fields > div')].map(item => item.textContent);
+  const values = [...d.querySelectorAll('#history-detail-fields dl > div')].map(item => item.textContent);
   assert.equal(values.length, 8);
   assert.ok(values.includes('Academic app usage0 hrs / day'));
   assert.ok(values.includes('Social media usage—'));
@@ -200,7 +220,7 @@ test('when a page disappears, the same applied query moves to the last valid pag
     return offset ? reply([], 1) : reply([record()], calls.length === 1 ? 26 : 1);
   }});
   await tick(); d.querySelector('#history-next').click(); await tick(); await tick();
-  assert.deepEqual(calls, [0, 25, 0]);
+  assert.deepEqual(calls, [0, 10, 0]);
   assert.equal(d.querySelector('#history-page').textContent, '1–1 of 1');
   assert.equal(d.querySelector('#history-next').disabled, true);
 });
