@@ -37,16 +37,19 @@
           <div class="rule"></div>
           <label class="field">
             <span class="field-label">Year level</span>
-            <select id="yearLevel">
+            <select id="yearLevel" required>
               <option value="">Select year level</option>
-              <option>1st Year</option><option>2nd Year</option>
+              <option>2nd Year</option>
               <option>3rd Year</option><option>4th Year</option>
             </select>
           </label>
           <label class="field">
             <span class="field-label">Program / Course</span>
-            <span class="field-hint">Optional for this prototype</span>
-            <input type="text" id="program" placeholder="e.g. BSIT" />
+            <select id="program" required><option value="">Select program</option><option>BSIT</option><option>BSCS</option></select>
+          </label>
+          <label class="field" id="third-year-term-field" hidden>
+            <span class="field-label">Completed third-year semester</span>
+            <select id="thirdYearSemester" disabled><option value="">Select semester</option><option>1st Sem</option><option>2nd Sem</option></select>
           </label>
         </section>
 
@@ -54,7 +57,7 @@
           <h2>Cellphone Usage</h2>
           <div class="rule"></div>
           <label class="field">
-            <span class="field-label">Average daily screen time (hours)</span>
+              <span class="field-label">Average daily screen time over the most recent 7 days (hours)</span>
             <input type="number" id="screenTime" min="0" max="24" step="0.5" required />
           </label>
           <label class="field">
@@ -82,6 +85,7 @@
           </label>
         </section>
 
+        <p>For third year, the estimate uses the selected completed semester and the survey's average subject difficulty. Other answers provide study reflection.</p>
         <div class="button-row">
           <button type="submit" id="submit-btn">Estimate performance</button>
           <button type="button" id="reset-btn">Reset</button>
@@ -91,20 +95,22 @@
       <div class="result-panel" id="result-panel">
         <div id="result-empty">
           <h2>Result</h2>
-          <p>Fill in the form and submit to see your estimated GWA.</p>
+          <p class="empty-invite">Fill in the form and submit to see your estimated GWA.</p>
         </div>
         <div id="result-filled" class="hidden">
           <div class="result-label">Estimated GWA</div>
           <div id="result-gwa" class="result-gwa"></div>
           <div id="result-band" class="result-band"></div>
+          <p id="difficulty-result" hidden></p>
+          <h3>Study reflection</h3><ul id="result-suggestions"></ul>
           <div class="rule"></div>
-          <p class="result-note">This is an early prototype estimate using a simplified scoring method. See <a href="hiw.html">How It Works</a> for details on our current approach.</p>
+          <p class="result-note">This model estimates a completed semester GWA and has not been validated for future grades. See <a href="hiw.html">How It Works</a> for details on our current approach.</p>
         </div>
       </div>
     </div>
   </div>
 
   <script src="js/storage.js"></script>
-  <script src="js/assessment.js"></script>
+  <script src="../js/assessment.js"></script>
 </body>
 </html>

@@ -1,114 +1,64 @@
-// Color mapping for performance bands - using CSS classes instead of hardcoded colors
-// The actual colors are defined in style.css using CSS variables
-const BAND_CLASSES = {
-  "Excellent": "band-excellent",
-  "Good": "band-good",
-  "Satisfactory": "band-satisfactory",
-  "Failing": "band-failing"
-};
-
 const form = document.getElementById('estimator-form');
 const resultEmpty = document.getElementById('result-empty');
 const resultFilled = document.getElementById('result-filled');
-const resultPanel = document.getElementById('result-panel');
 const submitBtn = document.getElementById('submit-btn');
-const resetBtn = document.getElementById('reset-btn');
-const resultGwa = document.getElementById('result-gwa');
-const resultBand = document.getElementById('result-band');
+const requiredIds = ['yearLevel', 'program', 'screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays'];
+const fieldValue = id => document.getElementById(id).value;
+const semester = document.getElementById('thirdYearSemester');
 
-const requiredIds = ['screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays'];
+function syncSemester() {
+  const thirdYear = fieldValue('yearLevel') === '3rd Year';
+  document.getElementById('third-year-term-field').hidden = !thirdYear;
+  semester.disabled = !thirdYear;
+  semester.required = thirdYear;
+  if (!thirdYear) semester.value = '';
+}
+document.getElementById('yearLevel').addEventListener('change', syncSemester);
 
 function checkFormValid() {
-  submitBtn.disabled = !requiredIds.every(id => document.getElementById(id).value !== '');
+  submitBtn.disabled = !requiredIds.every(id => fieldValue(id) !== '');
 }
-requiredIds.forEach(id => document.getElementById(id).addEventListener('input', checkFormValid));
+requiredIds.forEach(id => document.getElementById(id).addEventListener('change', checkFormValid));
+document.getElementById('screenTime').addEventListener('input', checkFormValid);
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!form.reportValidity()) return;
   const data = {
-    yearLevel: document.getElementById('yearLevel').value,
-    program: document.getElementById('program').value,
-    screenTime: Number(document.getElementById('screenTime').value),
-    academicPhoneUse: Number(document.getElementById('academicPhoneUse').value),
-    socialPhoneUse: Number(document.getElementById('socialPhoneUse').value),
-    studyHours: Number(document.getElementById('studyHours').value),
-    studyDays: Number(document.getElementById('studyDays').value),
+    yearLevel: fieldValue('yearLevel'), program: fieldValue('program'),
+    screenTime: Number(fieldValue('screenTime')),
+    academicPhoneUse: Number(fieldValue('academicPhoneUse')), socialPhoneUse: Number(fieldValue('socialPhoneUse')),
+    studyHours: Number(fieldValue('studyHours')), studyDays: Number(fieldValue('studyDays')),
+    thirdYearSemester: semester.value
   };
-
-  // Disable button and show loading state
   submitBtn.disabled = true;
-  const originalBtnText = submitBtn.textContent;
-  submitBtn.textContent = 'Estimating...';
-
   try {
-    const response = await fetch('/predict', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Unknown error');
-    }
-
+    const response = await fetch('/predict', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
     const result = await response.json();
-
-    // Update UI with prediction results
-    resultGwa.textContent = result.predicted_gwa.toFixed(2);
-    // resultGwa color is handled by CSS (var(--gold))
-    
-    // Update result band with appropriate class instead of inline background
-    resultBand.textContent = result.performance_category;
-    resultBand.className = ''; // Clear existing classes
-    resultBand.classList.add(BAND_CLASSES[result.performance_category]);
-
-    resultEmpty.classList.add('hidden');
-    resultFilled.classList.remove('hidden');
-    resultPanel.classList.add('filled');
-
-    // Save entry to localStorage for offline access/backup
-    const entry = {
-      yearLevel: data.yearLevel,
-      program: data.program,
-      daily_screen_time_hrs: data.screenTime,
-      academic_app_usage_hrs: data.academicPhoneUse,
-      social_media_hrs: data.socialPhoneUse,
-      study_hours_per_day: data.studyHours,
-      study_frequency_per_week: data.studyDays,
-      predicted_gwa: result.predicted_gwa,
-      performance_category: result.performance_category,
-      created_at: new Date().toISOString().replace('T', ' ').substring(0, 19) // Format: YYYY-MM-DD HH:MM:SS
-    };
-    saveEntry(entry);
-
-  } catch (err) {
-    // Show error message
-    const inviteEl = document.querySelector('#result-empty .empty-invite');
-    inviteEl.textContent = `Error: ${err.message}`;
-    inviteEl.classList.add('error-text');
-    resultEmpty.classList.remove('hidden');
-    resultFilled.classList.add('hidden');
-    resultPanel.classList.remove('filled');
-  } finally {
-    // Re-enable button and reset text
-    submitBtn.disabled = false;
-    submitBtn.textContent = originalBtnText;
-  }
+    if (!response.ok) throw new Error(result.error || 'Prediction unavailable');
+    document.getElementById('result-gwa').textContent = result.predicted_gwa.toFixed(2);
+    document.getElementById('result-band').textContent = result.performance_category;
+    document.getElementById('result-band').className = 'result-band band-' + result.performance_category.toLowerCase();
+    const difficulty = document.getElementById('difficulty-result');
+    difficulty.hidden = result.semester_difficulty == null;
+    difficulty.textContent = difficulty.hidden ? '' : `Survey average subject difficulty: ${result.semester_difficulty.toFixed(2)} / 5 for ${data.program}, ${data.thirdYearSemester}. This exploratory feature has not been shown to improve accuracy.`;
+    const suggestions = document.getElementById('result-suggestions');
+    suggestions.replaceChildren();
+    (result.suggestions || []).forEach(text => { const item = document.createElement('li'); item.textContent = text; suggestions.append(item); });
+    resultEmpty.classList.add('hidden'); resultFilled.classList.remove('hidden');
+    document.getElementById('result-panel').classList.add('filled');
+    try { saveEntry({...data, predicted_gwa: result.predicted_gwa, performance_category: result.performance_category, created_at: new Date().toISOString()}); }
+    catch { /* The result remains visible if browser storage is unavailable. */ }
+  } catch (error) {
+    resultEmpty.querySelector('.empty-invite').textContent = 'Could not estimate GWA: ' + error.message;
+    resultEmpty.classList.remove('hidden'); resultFilled.classList.add('hidden');
+  } finally { checkFormValid(); }
 });
 
-resetBtn.addEventListener('click', () => {
-  form.reset();
-  resultEmpty.classList.remove('hidden');
-  resultFilled.classList.add('hidden');
-  resultPanel.classList.remove('filled');
-  const inviteEl = document.querySelector('#result-empty .empty-invite');
-  inviteEl.textContent = 'Fill in the form to see your estimate';
-  inviteEl.classList.remove('error-text');
+document.getElementById('reset-btn').addEventListener('click', () => {
+  form.reset(); resultEmpty.classList.remove('hidden'); resultFilled.classList.add('hidden');
+  syncSemester();
+  document.getElementById('result-panel').classList.remove('filled');
   checkFormValid();
 });
-
 checkFormValid();

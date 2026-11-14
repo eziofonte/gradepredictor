@@ -15,7 +15,15 @@ const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)'
 const later = (action, delay) => resultTimers.push(setTimeout(action, delay));
 function clearResultTimers() { resultTimers.forEach(clearTimeout); resultTimers = []; }
 
-const requiredIds = ['academicTerm', 'screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays'];
+const requiredIds = ['yearLevel', 'academicTerm', 'program', 'screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays'];
+const yearInput = document.getElementById('yearLevel');
+const termInput = document.getElementById('academicTerm');
+function validateThirdYearTerm() {
+  termInput.setCustomValidity(yearInput.value === '3rd Year' && termInput.value === 'Midyear'
+    ? 'Select a completed first or second semester for third year.' : '');
+}
+yearInput.addEventListener('change', validateThirdYearTerm);
+termInput.addEventListener('change', validateThirdYearTerm);
 
 requiredIds.forEach(id => {
   const input = document.getElementById(id);
@@ -353,6 +361,9 @@ function showResult(result) {
   resultSuggestions.classList.toggle('hidden', resultSuggestions.children.length === 0);
 
   renderSlidingNumber(resultGwa, result.predicted_gwa);
+  const difficulty = document.getElementById('difficulty-result');
+  difficulty.hidden = result.semester_difficulty == null;
+  difficulty.textContent = difficulty.hidden ? '' : `Survey average subject difficulty: ${result.semester_difficulty.toFixed(2)} / 5. This exploratory feature has not been shown to improve accuracy.`;
 
   const scaleVisual = document.querySelector('.gwa-scale-visual');
   const bar = document.getElementById('gwa-scale-bar');
@@ -413,6 +424,7 @@ form.addEventListener('submit', async (e) => {
   const data = {
     yearLevel: document.getElementById('yearLevel').value,
     academicTerm: document.getElementById('academicTerm').value,
+    thirdYearSemester: document.getElementById('academicTerm').value,
     program: document.getElementById('program').value,
     screenTime: Number(document.getElementById('screenTime').value),
     academicPhoneUse: Number(document.getElementById('academicPhoneUse').value),

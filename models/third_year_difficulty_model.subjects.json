@@ -1,0 +1,34 @@
+{
+  "BSCS": {
+    "1st Sem": [
+      "Automata Theory and Formal Languages",
+      "Programming Languages",
+      "Software Engineering",
+      "Operating System",
+      "Intelligent System"
+    ],
+    "2nd Sem": [
+      "Software Engineering 2",
+      "Compiler Design",
+      "Computational Science",
+      "Ethics",
+      "CS Elective 1",
+      "Research Writing"
+    ]
+  },
+  "BSIT": {
+    "1st Sem": [
+      "Application and Emerging Technologies",
+      "Advanced Database Systems",
+      "Networking 2",
+      "Professional Elective 3",
+      "Life and Works of Rizal"
+    ],
+    "2nd Sem": [
+      "Information Assurance and Security",
+      "System Integration and Architecture 1",
+      "Integrative Programming and Technologies",
+      "Ethics"
+    ]
+  }
+}

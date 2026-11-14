@@ -57,7 +57,7 @@
         <div class="hero-content">
           <h1>PLM Student Academic Performance Prediction System</h1>
           <p class="subtitle">
-            This predictive system uses machine learning to evaluate how daily cellphone usage and study routines affect the academic performance of PLM students.
+            This system estimates completed semester GWA from daily screen time, program and year using CISTM survey data.
           </p>
           <div class="button-row" style="margin-top: 20px;">
             <a href="#assessment" class="btn-primary">Take the Assessment</a>
@@ -234,13 +234,13 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </summary>
             <div class="how-works-content">
-                <p>The estimator uses five values from your daily routine:</p>
+                <p>The estimator uses:</p>
                 <ul>
                   <li>Average daily screen time</li>
-                  <li>Academic phone use during study time</li>
-                  <li>Social media or entertainment phone use during study time</li>
-                  <li>Average study hours per day</li>
-                  <li>Study frequency per week</li>
+                  <li>Program and year level</li>
+                  <li></li>
+                  <li>The additional study and phone-use answers do not affect the current estimate.</li>
+                  
                 </ul>
             </div>
           </details>
@@ -250,7 +250,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </summary>
             <div class="how-works-content">
-                <p>Your inputs feed a Linear Regression model that estimates your General Weighted Average (GWA) on the 1.00&ndash;5.00 scale. A lower GWA indicates better academic performance.</p>
+                <p>Your inputs feed a ridge regression model that estimates your General Weighted Average (GWA) on the 1.00&ndash;5.00 scale. A lower GWA indicates better academic performance.</p>
             </div>
           </details>
           <details class="how-works-item" name="home-how-it-works">
@@ -274,8 +274,8 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </summary>
             <div class="how-works-content">
-                <p>This prototype uses a Linear Regression model trained on synthetic data. It can be retrained when real survey data becomes available.</p>
-                <p>A subject difficulty adjustment is planned for third-year first and second semesters. It is not yet included in predictions. Fourth-year adjustments require more completed-semester GWA data.</p>
+                <p>This ridge regression model was trained on CISTM survey responses to estimate a completed semester GWA. It has not been validated to predict future grades.</p>
+                <p>Screen time and study habits were recorded after the completed semester used as the target.</p>
                 <p>Use the result to reflect on your habits. It is an estimate, not an official grade.</p>
             </div>
           </details>
@@ -301,7 +301,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
             <div class="section-head"><span class="section-number">1</span><h2>Student</h2></div>
             <div class="rule"></div>
             <div class="field-row cols-2">
-              <div class="field"><label class="field-label" for="yearLevel">Year level</label><div class="field-hint"></div><div class="input-shell select-shell"><select id="yearLevel"><option value="">Select year level</option><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></div></div>
+              <div class="field"><label class="field-label" for="yearLevel">Year level</label><div class="field-hint"></div><div class="input-shell select-shell"><select id="yearLevel" required><option value="">Select year level</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></div></div>
               <div class="field">
                 <label class="field-label" for="academicTerm">Academic Term</label>
                 <div class="field-hint"></div>
@@ -317,7 +317,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               </div>
             </div>
             <div class="field-row">
-              <div class="field"><label class="field-label" for="program">Program / Course</label><div class="field-hint"></div><div class="input-shell select-shell"><select id="program"><option value="">Select program</option><option>BSIT</option><option>BSCS</option></select></div></div>
+              <div class="field"><label class="field-label" for="program">Program / Course</label><div class="field-hint"></div><div class="input-shell select-shell"><select id="program" required><option value="">Select program</option><option>BSIT</option><option>BSCS</option></select></div></div>
             </div>
           </section>
 
@@ -325,7 +325,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
             <div class="section-head"><span class="section-number">2</span><h2>Cellphone Usage</h2></div>
             <p class="section-intro">Tell us how you typically use your phone during the day and while studying.</p>
             <div class="rule"></div>
-            <div class="field-row"><div class="field"><label class="field-label" for="screenTime">Average daily screen time</label><div class="field-hint"></div><div class="input-shell"><input type="number" id="screenTime" min="0" max="24" step="0.5" required /><span class="unit-tag">hrs / day</span><div class="steppers"><button type="button" aria-label="Increase screen time" data-dir="1">&#9650;</button><button type="button" aria-label="Decrease screen time" data-dir="-1">&#9660;</button></div></div><span class="field-error" id="screenTime-error" aria-live="polite"></span></div></div>
+            <div class="field-row"><div class="field"><label class="field-label" for="screenTime">Average daily screen time over the most recent 7 days</label><div class="field-hint"></div><div class="input-shell"><input type="number" id="screenTime" min="0" max="24" step="0.5" required /><span class="unit-tag">hrs / day</span><div class="steppers"><button type="button" aria-label="Increase screen time" data-dir="1">&#9650;</button><button type="button" aria-label="Decrease screen time" data-dir="-1">&#9660;</button></div></div><span class="field-error" id="screenTime-error" aria-live="polite"></span></div></div>
             <div class="field-row cols-2 phone-use-row">
               <div class="field"><label class="field-label" for="academicPhoneUse">Academic phone use during study time</label><div class="field-hint">e.g. looking up school materials, checking the LMS</div><div class="input-shell"><input type="number" id="academicPhoneUse" min="0" max="24" step="0.5" required /><span class="unit-tag">hrs / day</span><div class="steppers"><button type="button" aria-label="Increase academic phone use" data-dir="1">&#9650;</button><button type="button" aria-label="Decrease academic phone use" data-dir="-1">&#9660;</button></div></div><span class="field-error" id="academicPhoneUse-error" aria-live="polite"></span></div>
               <div class="field"><label class="field-label" for="socialPhoneUse">Social media / entertainment phone use during study time</label><div class="field-hint">e.g. social media, games while supposed to be studying</div><div class="input-shell"><input type="number" id="socialPhoneUse" min="0" max="24" step="0.5" required /><span class="unit-tag">hrs / day</span><div class="steppers"><button type="button" aria-label="Increase social phone use" data-dir="1">&#9650;</button><button type="button" aria-label="Decrease social phone use" data-dir="-1">&#9660;</button></div></div><span class="field-error" id="socialPhoneUse-error" aria-live="polite"></span></div>
@@ -344,7 +344,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
 
           <p id="assessment-message" class="status status--error" role="alert" hidden></p>
           <div class="button-row">
-            <button type="submit" id="submit-btn" class="estimate-btn">Predict performance</button>
+          <button type="submit" id="submit-btn" class="estimate-btn">Predict performance</button>
             <button type="button" id="reset-btn">Reset</button>
           </div>
         </form>
@@ -356,6 +356,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
             <div id="result-filled" class="hidden">
               <div class="result-label">Predicted GWA</div>
               <div id="result-gwa" class="result-gwa" role="status" aria-live="polite"></div>
+              <p id="difficulty-result" hidden></p>
             </div>
             <div class="gwa-scale-visual result-scale-preview">
               <div class="gwa-scale-label">GWA scale</div>
@@ -371,7 +372,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               <div class="gwa-scale-labels"><span class="label">1.00</span><span class="label">1.75</span><span class="label">2.50</span><span class="label">3.00</span><span class="label">5.00</span></div>
             </div>
             <ul id="result-suggestions" class="hidden" aria-label="Study suggestions" style="color: var(--dark-ink); text-align: left;"></ul>
-            <div id="result-note-wrap" class="hidden"><div class="rule"></div><p class="result-note">This is a prototype estimate, not an official grade. <a href="hiw.html">How the prediction works</a></p></div>
+            <div id="result-note-wrap" class="hidden"><div class="rule"></div><p class="result-note"><a href="index.html#how-it-works"></a></p></div>
           </div>
         </div>
       </div>

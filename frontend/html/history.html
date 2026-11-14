@@ -6,7 +6,7 @@
   <title>History</title>
   <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=text-white-1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/style.css?v=controls-14px-1" />
+  <link rel="stylesheet" href="../css/style.css?v=drafts-2" />
   <script src="../js/theme-toggle.js?v=circular-theme-1"></script>
 </head>
 <body class="history-body">
@@ -85,20 +85,17 @@
       <section id="history-manage" class="history-manage" aria-labelledby="history-manage-title" hidden><h2 id="history-manage-title">Manage history</h2><button type="button" id="clear-btn" class="history-text-button history-delete">Clear all history</button><p class="text-secondary">This deletes all your assessments, including records outside the current filters.</p></section>
     </div>
   </main>
-  <dialog id="history-detail" class="history-detail history-report" aria-labelledby="history-detail-title" aria-describedby="history-detail-date history-detail-reminder">
-    <div class="history-detail-heading">
-      <div><h2 id="history-detail-title">Assessment details</h2><p id="history-detail-date" class="text-secondary"></p></div>
-      <button type="button" id="history-detail-close" class="history-detail-close" aria-label="Close assessment details" autofocus><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
-    </div>
+  <dialog id="history-detail" class="history-detail" aria-labelledby="history-detail-title" aria-describedby="history-detail-date history-detail-reminder">
+    <div class="history-detail-heading"><h2 id="history-detail-title">Assessment details</h2><button type="button" id="history-detail-close" class="btn-secondary" autofocus>Close</button></div>
+    <p id="history-detail-date" class="text-secondary"></p>
     <div id="history-detail-result" class="history-detail-result"></div>
-    <div id="history-detail-fields"></div>
+    <dl id="history-detail-fields" class="history-detail-fields"></dl>
     <p id="history-detail-reminder" class="text-secondary">This is a saved estimate, not an official grade.</p>
     <div class="history-detail-actions"><button type="button" id="history-detail-delete" class="history-text-button history-delete">Delete assessment</button><button type="button" id="history-detail-done" class="btn-secondary">Close</button></div>
   </dialog>
   <dialog id="history-confirm" class="history-detail history-confirm" aria-labelledby="history-confirm-title" aria-describedby="history-confirm-description history-confirm-retention">
     <h2 id="history-confirm-title"></h2>
     <p id="history-confirm-description"></p>
-    <p id="history-confirm-retention" class="text-secondary">Deleted assessments may remain in backups for up to 30 days.</p>
     <p id="history-confirm-error" class="status status--error" role="alert" hidden></p>
     <div class="history-confirm-actions"><button id="history-confirm-cancel" type="button" class="btn-secondary" autofocus>Cancel</button><button id="history-confirm-delete" type="button" class="btn-destructive"></button></div>
   </dialog>
@@ -106,6 +103,6 @@
   <script src="../js/assessment-drafts.js?v=drafts-1"></script>
   <script src="../js/auth.js?v=drafts-2"></script>
   <script src="../js/history-calendar.js?v=history-date-bounds-1"></script>
-  <script src="../js/history.js?v=history-report-1"></script>
+  <script src="../js/history.js?v=drafts-2"></script>
 </body>
 </html>

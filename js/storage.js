@@ -29,14 +29,3 @@ function getBand(gwa) {
   return BANDS.find(b => gwa >= b.min && gwa <= b.max) || BANDS[3];
 }
 
-// PLACEHOLDER formula only — replace once the real Decision Tree
-// model is connected via the Flask backend.
-function estimateGWA({ screenTime, studyDuringPhone, studyHours, studyDays }) {
-  let base = 2.75;
-  base -= studyHours * 0.12;
-  base -= studyDays * 0.03;
-  base += screenTime * 0.05;
-  base += studyDuringPhone * 0.08;
-  const gwa = Math.min(5, Math.max(1, base));
-  return Math.round(gwa * 100) / 100;
-}

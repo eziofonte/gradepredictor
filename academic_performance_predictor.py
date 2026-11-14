@@ -42,10 +42,6 @@ CATEGORY_ORDER = ["Failing", "Satisfactory", "Good", "Excellent"]
 
 
 def gwa_to_category(gwa):
-    """Convert a 1.00-5.00 GWA (lower = better) into a category label.
-    Thresholds follow a typical PLM-style passing scheme: 3.00 is the
-    passing cutoff, anything above is failing. Adjust to match your
-    college's actual grading policy once real data is available."""
     if gwa <= 1.75:
         return "Excellent"
     elif gwa <= 2.50:

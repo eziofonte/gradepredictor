@@ -20,6 +20,10 @@ academic-performance-webapp-BACKUP-*.tar.gz
 
 venv/
 tests/
+!tests/
+tests/*
+!tests/test_real_model_integration.py
+!tests/test_third_year_difficulty.py
 backups
 output/
 tools/

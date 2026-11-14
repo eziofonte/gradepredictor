@@ -3,20 +3,28 @@ import sys
 from flask import Flask, request, jsonify, send_from_directory
 import mysql.connector
 from mysql.connector import Error
-import numpy as np
+import math
+import json
+from pathlib import Path
+import joblib
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeClassifier
 import config
-from academic_performance_predictor import (
-    generate_synthetic_data,
-    FEATURE_COLUMNS,
-    TARGET_SCORE,
-    TARGET_CLASS,
-    RANDOM_SEED,
-    gwa_to_category,
-)
-import config
+
+MODEL_PATH = Path(__file__).resolve().parent / 'models' / 'short_form_gwa_model.joblib'
+THIRD_YEAR_MODEL_PATH = Path(__file__).resolve().parent / 'models' / 'third_year_difficulty_model.joblib'
+DIFFICULTY_PATH = THIRD_YEAR_MODEL_PATH.with_suffix('.difficulty.json')
+
+def load_semester_difficulty():
+    return json.loads(DIFFICULTY_PATH.read_text(encoding='utf-8'))
+
+def gwa_to_category(gwa):
+    if gwa <= 1.75:
+        return 'Excellent'
+    if gwa <= 2.50:
+        return 'Good'
+    if gwa <= 3.00:
+        return 'Satisfactory'
+    return 'Failing'
 
 def ensure_database_exists():
     """Create the configured database if it doesn't exist yet.
@@ -46,54 +54,17 @@ def create_app():
             print(f"Error connecting to MySQL: {e}")
             return None
 
-    def train_models():
-        """Train the regression + decision tree models once on synthetic
-        data when the app starts (matches the desktop app's behavior:
-        no saved model files, fresh training each run)."""
-        df = generate_synthetic_data(n=400)
-        X = df[FEATURE_COLUMNS]
-
-        reg_model = LinearRegression()
-        reg_model.fit(X, df[TARGET_SCORE])
-
-        clf_model = DecisionTreeClassifier(max_depth=4, min_samples_leaf=8, random_state=RANDOM_SEED)
-        clf_model.fit(X, df[TARGET_CLASS])
-
-        return reg_model, clf_model
-
-    def predict_new_student(reg_model, clf_model, student_dict):
-        """Given a dict of feature values for one student, return the GWA,
-        the GWA-derived category (source of truth), and the tree's separate
-        category prediction for an agree/disagree cross-check. Matches
-        academic_performance_calculator_app.py's on_predict() logic exactly."""
-        # NOTE: studyDuringPhone currently maps to BOTH academic_app_usage_hrs
-        # and social_media_hrs below - this is a known limitation until
-        # assessment.html has separate fields for each. See open TODO.
-        features = {
-            'daily_screen_time_hrs': float(student_dict.get('screenTime', 0)),
-            'academic_app_usage_hrs': float(student_dict.get('academicPhoneUse', 0)),
-            'social_media_hrs': float(student_dict.get('socialPhoneUse', 0)),
-            'study_hours_per_day': float(student_dict.get('studyHours', 0)),
-            'study_frequency_per_week': float(student_dict.get('studyDays', 0))
-        }
-
-        X_new = pd.DataFrame([features])[FEATURE_COLUMNS]
-        gwa = float(np.clip(reg_model.predict(X_new)[0], 1.00, 5.00))
-        gwa = round(gwa, 2)
-
-        category = gwa_to_category(gwa)          # source of truth, always derived from GWA
-        tree_category = clf_model.predict(X_new)[0]  # separate cross-check, never used for display
-        agrees_with_gwa = bool(tree_category == category)
-
-        return gwa, category, tree_category, agrees_with_gwa
-
-    # Initialize models
     try:
-        reg_model, clf_model = train_models()
-        print("Models initialized successfully")
+        reg_model = joblib.load(MODEL_PATH)
     except Exception as e:
-        print(f"Failed to initialize models: {e}")
-        reg_model, clf_model = None, None
+        app.logger.error('Unable to load survey model: %s', e)
+        reg_model = None
+    try:
+        difficulty_model = joblib.load(THIRD_YEAR_MODEL_PATH)
+        semester_difficulties = load_semester_difficulty()
+    except Exception as e:
+        app.logger.error('Unable to load third-year model: %s', e)
+        difficulty_model, semester_difficulties = None, {}
 
     # Serve frontend files
     @app.route('/')
@@ -105,7 +76,7 @@ def create_app():
     def serve_static(path):
         """Serve static files (HTML, CSS, JS) from the project root."""
         # Prevent directory traversal attacks
-        if '..' in path or path.startswith('/'):
+        if '..' in path or path.startswith('/') or not (path.startswith(('html/', 'js/')) or path in ('style.css', 'index.html', 'assessment.html', 'history.html')):
             return jsonify({'error': 'Not found'}), 404
 
         # Check if file exists in root or html/ directory
@@ -131,120 +102,64 @@ def create_app():
         return jsonify({
             'status': 'healthy',
             'database': db_status,
-            'models_loaded': reg_model is not None and clf_model is not None
+            'models_loaded': reg_model is not None
         })
 
     # Prediction endpoint
     @app.route('/predict', methods=['POST'])
     def predict():
-        """Handle prediction requests from the assessment form."""
-        if reg_model is None or clf_model is None:
-            return jsonify({'error': 'Models not available'}), 500
-
+        if reg_model is None:
+            return jsonify({'error': 'Survey model unavailable'}), 503
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({'error': 'A JSON object is required'}), 400
+        year_value = data.get('yearLevel')
+        year = {'2nd Year': '2', '3rd Year': '3', '4th Year': '4'}.get(year_value) if isinstance(year_value, str) else None
+        program = data.get('program')
         try:
-            # Get JSON data from request
-            data = request.get_json()
-
-            if not data:
-                return jsonify({'error': 'No JSON data provided'}), 400
-
-            # Extract and validate required fields (matching assessment form)
-            required_fields = ['screenTime', 'academicPhoneUse', 'socialPhoneUse', 'studyHours', 'studyDays']
-            missing_fields = [field for field in required_fields if not data.get(field) and data.get(field) != 0]
-
-            if missing_fields:
-                return jsonify({
-                    'error': f'Missing required fields: {", ".join(missing_fields)}'
-                }), 400
-
-            # Convert to appropriate types and validate
+            screen = float(data.get('screenTime'))
+        except (TypeError, ValueError):
+            screen = float('nan')
+        if not year or program not in ('BSIT', 'BSCS'):
+            return jsonify({'error': 'Select BSIT or BSCS and a year from 2nd to 4th.'}), 400
+        if isinstance(data.get('screenTime'), bool) or not math.isfinite(screen) or not 0 <= screen <= 24:
+            return jsonify({'error': 'Screen time must be between 0 and 24 hours.'}), 400
+        responses = {}
+        for field, maximum in [('academicPhoneUse', 24), ('socialPhoneUse', 24), ('studyHours', 24), ('studyDays', 7)]:
+            value = data.get(field)
             try:
-                screenTime = float(data['screenTime'])
-                academicPhoneUse = float(data['academicPhoneUse'])
-                socialPhoneUse = float(data['socialPhoneUse'])
-                studyHours = float(data['studyHours'])
-                studyDays = float(data['studyDays'])
-
-                # Validate ranges
-                if not (0 <= screenTime <= 24):
-                    return jsonify({'error': 'Screen time must be between 0 and 24 hours'}), 400
-                if not (0 <= academicPhoneUse <= 24):
-                    return jsonify({'error': 'Academic phone use must be between 0 and 24 hours'}), 400
-                if not (0 <= socialPhoneUse <= 24):
-                    return jsonify({'error': 'Social phone use must be between 0 and 24 hours'}), 400
-                if not (0 <= studyHours <= 24):
-                    return jsonify({'error': 'Study hours must be between 0 and 24 hours'}), 400
-                if not (0 <= studyDays <= 7):
-                    return jsonify({'error': 'Study days must be between 0 and 7'}), 400
-
-            except (ValueError, TypeError) as e:
-                return jsonify({
-                    'error': f'Invalid value format: {str(e)}'
-                }), 400
-
-            # Make prediction using the real predictor
-            student_data = {
-                'screenTime': screenTime,
-                'academicPhoneUse': academicPhoneUse,
-                'socialPhoneUse': socialPhoneUse,
-                'studyHours': studyHours,
-                'studyDays': studyDays
-            }
-
-            predicted_gwa, performance_category, tree_category, agrees_with_gwa = predict_new_student(reg_model, clf_model, student_data)
-
-            # Try to store result in database (optional, continue if fails)
-            db_connection = get_db_connection()
-            if db_connection and db_connection.is_connected():
-                try:
-                    cursor = db_connection.cursor()
-                    insert_query = """
-                    INSERT INTO assessments
-                    (daily_screen_time_hrs, academic_app_usage_hrs, social_media_hrs,
-                     study_hours_per_day, study_frequency_per_week,
-                     predicted_gwa, performance_category, tree_prediction, agrees_with_gwa)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """
-                    cursor.execute(insert_query, (
-                        screenTime,
-                        academicPhoneUse,
-                        socialPhoneUse,
-                        studyHours,
-                        studyDays,
-                        predicted_gwa,
-                        performance_category,
-                        str(tree_category),
-                        agrees_with_gwa
-                    ))
-                    assessment_id = cursor.lastrowid
-                    db_connection.commit()
-                    cursor.close()
-                except Error as e:
-                    print(f"Warning: Could not store assessment in database: {e}")
-                    assessment_id = None
-                finally:
-                    if db_connection.is_connected():
-                        db_connection.close()
-            else:
-                assessment_id = None
-
-            # Return prediction result
-            return jsonify({
-                'assessment_id': assessment_id,
-                'predicted_gwa': predicted_gwa,
-                'performance_category': performance_category,
-                'tree_prediction': str(tree_category),
-                'agrees_with_gwa': agrees_with_gwa,
-                'model_info': {
-                    'regression_model': 'Linear Regression',
-                    'category_model': 'Decision Tree (max_depth=4, min_samples_leaf=8)',
-                    'note': 'performance_category is always derived from predicted_gwa via gwa_to_category(); tree_prediction is shown as a separate agreement check, never used for display.'
-                }
-            })
-
-        except Exception as e:
-            print(f"Error in prediction: {e}")
-            return jsonify({'error': 'Internal server error'}), 500
+                number = float(value)
+            except (TypeError, ValueError):
+                number = float('nan')
+            if isinstance(value, bool) or not math.isfinite(number) or not 0 <= number <= maximum or (field == 'studyDays' and not number.is_integer()):
+                return jsonify({'error': f'{field} must be within its allowed range.'}), 400
+            responses[field] = number
+        if year == '3':
+            if difficulty_model is None:
+                return jsonify({'error': 'Third-year difficulty model unavailable'}), 503
+            term = data.get('thirdYearSemester')
+            if not isinstance(term, str) or term not in ('1st Sem', '2nd Sem'):
+                return jsonify({'error': 'Select a completed third-year semester.'}), 400
+            difficulty = semester_difficulties.get(program, {}).get(term)
+            if not isinstance(difficulty, (int, float)) or not math.isfinite(difficulty) or not 1 <= difficulty <= 5:
+                return jsonify({'error': 'Semester difficulty data unavailable'}), 503
+            features = {'screen': screen, 'program': program, 'term': term, 'difficulty': difficulty}
+            raw = float(difficulty_model.predict(pd.DataFrame([features]))[0])
+            note = 'Uses screen time, program, semester and average difficulty from survey respondents; estimates that completed third-year semester.'
+        else:
+            features = {'screen_hours': screen, 'program': program, 'year_level': year}
+            raw = float(reg_model.predict(pd.DataFrame([features]))[0])
+            note = 'Uses screen time, program and year only; other answers do not affect the retrospective estimate.'
+        gwa = round(min(5.0, max(1.0, raw)), 2)
+        suggestions = [
+            f"You reported {responses['studyHours']:g} study hours per day and {responses['studyDays']:g} study days per week. Consider whether this routine gives you enough time for your coursework.",
+            f"During study time, you reported {responses['academicPhoneUse']:g} hours of academic phone use and {responses['socialPhoneUse']:g} hours of social or entertainment phone use. Consider whether the balance supports your focus."
+        ]
+        return jsonify({'predicted_gwa': gwa, 'performance_category': gwa_to_category(gwa), 'suggestions': suggestions,
+                        'semester_difficulty': difficulty if year == '3' else None,
+                        'model_info': {'regression_model': 'Ridge regression trained on survey data',
+                                       'note': note},
+                        'saved': False})
 
     # Results endpoints
     @app.route('/results', methods=['GET'])
@@ -260,7 +175,10 @@ def create_app():
             limit = request.args.get('limit', 100, type=int)
             offset = request.args.get('offset', 0, type=int)
 
-            query = "SELECT * FROM assessments ORDER BY created_at DESC LIMIT %s OFFSET %s"
+            query = """SELECT id, daily_screen_time_hrs, academic_app_usage_hrs,
+                       social_media_hrs, study_hours_per_day, study_frequency_per_week,
+                       predicted_gwa, performance_category, created_at
+                       FROM assessments ORDER BY created_at DESC LIMIT %s OFFSET %s"""
             cursor.execute(query, [limit, offset])
             results = cursor.fetchall()
 

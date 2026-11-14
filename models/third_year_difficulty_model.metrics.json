@@ -1,0 +1,22 @@
+{
+  "respondents": 141,
+  "training_respondents": 105,
+  "test_respondents": 36,
+  "training_semesters": 210,
+  "test_semesters": 72,
+  "model": {
+    "mae": 0.3590344769802635,
+    "rmse": 0.4499609745587101,
+    "r2": -0.04301202926542236
+  },
+  "without_difficulty": {
+    "mae": 0.3588999010578301,
+    "rmse": 0.4492037422733548,
+    "r2": -0.03950444592306601
+  },
+  "baseline": {
+    "mae": 0.3619371693121693,
+    "rmse": 0.45169378741445326,
+    "r2": -0.05106083715728982
+  }
+}

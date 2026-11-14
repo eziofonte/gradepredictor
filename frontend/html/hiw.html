@@ -217,13 +217,13 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </summary>
             <div class="how-works-content">
-                <p>The estimator uses five values from your daily routine:</p>
+                <p>The estimator uses:</p>
                 <ul>
                   <li>Average daily screen time</li>
-                  <li>Academic phone use during study time</li>
-                  <li>Social media or entertainment phone use during study time</li>
-                  <li>Average study hours per day</li>
-                  <li>Study frequency per week</li>
+                  <li>Program and year level</li>
+                  <li></li>
+                  <li>The additional study and phone-use answers do not affect the current estimate.</li>
+                  
                 </ul>
             </div>
           </details>
@@ -233,7 +233,7 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </summary>
             <div class="how-works-content">
-                <p>Your inputs feed a Linear Regression model that estimates your General Weighted Average (GWA) on the 1.00&ndash;5.00 scale. A lower GWA indicates better academic performance.</p>
+                <p>Your inputs feed a ridge regression model that estimates your General Weighted Average (GWA) on the 1.00&ndash;5.00 scale. A lower GWA indicates better academic performance.</p>
             </div>
           </details>
           <details class="how-works-item" name="page-how-it-works">
@@ -257,8 +257,8 @@ oOoO*o*o+*+o*o+*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+;=;+;=;=;=;=;=;=;=;==+;+=====+;==+
               <svg class="how-works-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </summary>
             <div class="how-works-content">
-                <p>This prototype uses a Linear Regression model trained on synthetic data. It can be retrained when real survey data becomes available.</p>
-                <p>A subject difficulty adjustment is planned for third-year first and second semesters. It is not yet included in predictions. Fourth-year adjustments require more completed-semester GWA data.</p>
+                <p>This ridge regression model was trained on CISTM survey responses to estimate a completed semester GWA. It has not been validated to predict future grades.</p>
+                <p>Screen time and study habits were recorded after the completed semester used as the target.</p>
                 <p>Use the result to reflect on your habits. It is an estimate, not an official grade.</p>
             </div>
           </details>
